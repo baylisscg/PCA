@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://java.sun.com/xml/ns/j2ee"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd"
+        version="2.4">
+
+  <!-- Name the application -->
+  <display-name>Example App</display-name>
+  <description>An example application which is used to play with some of the features of Tomcat</description>
+  
+  <% webxml.context_params.each do |k,v| %>
+  <context-param>
+    <param-name><%= k %></param-name>
+    <param-value><%= v %></param-value>
+  </context-param>
+  <% end %>
+
+  <filter>
+    <filter-name>RackFilter</filter-name>
+    <filter-class>org.jruby.rack.RackFilter</filter-class>
+  </filter>
+  <filter-mapping>
+    <filter-name>RackFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+
+  <listener>
+    <listener-class><%= webxml.servlet_context_listener %></listener-class>
+  </listener>
+
+  <% if webxml.jndi then webxml.jndi.each do |jndi| %>
+  <resource-ref>
+    <res-ref-name><%= jndi %></res-ref-name>
+    <res-type>javax.sql.DataSource</res-type>
+    <res-auth>Container</res-auth>
+  </resource-ref>
+  <% end; end %>
+
+  <welcome-file-list>
+    <welcome-file>index.html</welcome-file>
+    <welcome-file>index.htm</welcome-file>
+  </welcome-file-list> 
+
+</web-app>

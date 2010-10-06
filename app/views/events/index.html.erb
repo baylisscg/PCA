@@ -1,0 +1,11 @@
+
+Event activity summary.
+
+<table>
+  <tr><th>Action</th><th>Occurs</th></tr>
+  <% @types.each do |type| %>
+    <tr>
+      <td><%= type["_id"] %></td><td><%= type["value"]["count"].to_i %></td>
+    </tr>
+  <% end %>
+</table>

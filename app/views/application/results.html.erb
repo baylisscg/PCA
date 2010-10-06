@@ -1,0 +1,13 @@
+<section id="query">
+  <p>
+  You searched for <%= @query %>
+  </p>
+</section>
+<section id="results">
+  <h1>Results</h1>
+  <ul>
+    <% @results.each do |result| %>
+      <li><%= link_to result.subject_dn, result %></li> 
+    <% end %>
+  </ul>
+</section>

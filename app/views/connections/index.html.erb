@@ -1,0 +1,36 @@
+<% content_for :head do %> 
+<%= auto_discovery_link_tag(:atom, connections_url+".atom") %>
+<% end %> 
+<section>
+  <h1>Current Activity</h1>
+  <table class="activity">
+    <colgroup>
+      <col class="connection" />
+      <col class="cred"      />
+      <col class="event"    />
+      <col class="time"      />
+    </colgroup>
+    <thead>
+      <tr>
+	<th>Service</th>
+	<th>Client</th>
+	<th>User</th>
+	<th>Last Action</th>
+	<th>Occured</th>
+      </tr>
+    </thead>
+    <tbody>
+      
+	  <% @events.each do |n| %>
+	<tr>
+	  <td><%= link_to n.peer, n %></td>
+	  <td><%= link_to n.server, n %></td>
+	  <td><%= link_to "Credential", cert_path(n.cred_id) %></td>
+	  <td><!-- %= link_to "Event", n.events[-1] % --></td>
+	  <td><%= n.elapsed %></td>
+	</tr>
+      <% end %>
+     
+    </tbody>
+  </table>
+</section>

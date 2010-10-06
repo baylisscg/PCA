@@ -1,0 +1,15 @@
+<section id="query">
+  <p>
+  You searched for <%= @query %>
+  </p>
+</section>
+
+<section id="results">
+  <h1>Results</h1>
+  <p> You got <%= @hits.count %> hits.
+  <ul>
+    <% @hits.each do |result| %>
+      <li><%= result %></li> 
+    <% end %>
+  </ul>
+</section>

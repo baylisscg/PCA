@@ -1,0 +1,24 @@
+<% content_for :head do %>
+<%= auto_discovery_link_tag(:atom, event_url(@event)) %>
+<% end %>
+
+<section>
+  <h1>Event Details</h1>
+  <table class="activity">
+    <tr>
+      <td>Connection</td><td><%= link_to "connection", @event.connection %></td>
+    </tr>
+    <tr>      
+      <td>Cert</td><td><%= link_to "cert", @event.connection.cred %></td>
+    </tr>
+    <tr>
+      <td>Action</td>
+      <td><%= @event.action %></td>
+    </tr>
+    <tr>
+      <td>Time</td>
+      <td><%= @event.created_at %>
+      </td>
+    </tr>
+  </table>
+</section>

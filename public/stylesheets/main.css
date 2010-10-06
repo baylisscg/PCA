@@ -1,0 +1,54 @@
+body {
+    margin: 1em;
+}
+
+nav {
+    margin-left:auto;
+    margin-right:auto;
+    padding:1em;
+    background-color: lightblue;
+    -moz-border-radius: 1em;
+    -webkit-border-radius: 1em;
+    border-radius: 1em;
+}
+
+nav a:link{color:black}
+nav a:visited{color:black}
+nav ul{margin:0;padding:0 1em 0 0;text-align:center}
+nav li{display:inline;padding-left:1em}
+
+
+table {
+    margin-left:auto;
+    margin-right:auto;
+    padding:1em;
+    background-color: lightblue;
+    -moz-border-radius: 1em;
+    -webkit-border-radius: 1em;
+    border-radius: 1em;
+}
+
+table.activity thead {
+    color: red;
+}
+
+table.activity tbody name {
+    text-align: left;
+}
+
+table.activity tbody value {
+    text-align: right;
+    color: white;
+}
+
+table.activity col.time {
+    text-align: center;
+}
+
+table.activity col.event {
+    text-align: center;
+}
+
+table.activity col.connection {
+    text-align: left;
+}

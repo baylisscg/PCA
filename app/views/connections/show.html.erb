@@ -1,0 +1,39 @@
+<% content_for :head do %> 
+<%= auto_discovery_link_tag(:atom,connection_url(@conn)+".atom") %>
+<% end %> 
+
+<section>
+  <h1>Connection Details</h1>
+  <table class="activity">
+    <tr>
+      <td>From</td><td><%= @conn.server %></td>
+    </tr>
+    <tr>      
+      <td>To</td><td><%= @conn.peer %></td>
+    </tr>
+    <tr>
+      <td>Started</td>
+      <td><%= @conn.created_at %></td>
+    </tr>
+     <tr>	
+      <td>Last</td>
+      <td><%= @conn.updated_at %></td>
+    </tr>
+  </table>
+</section>
+
+<section>
+  <h1>Events</h1>
+  <table>
+    <tr>
+      <td>Event</td>
+      <td>Time</td>
+    </tr>
+    <% @conn.events.each do |event| %>
+    <tr>
+	<td><%= event.action %></td>
+	<td><%= event.created_at.strftime "%Y-%m-%dT%H:%M:%SZ" %></td>
+    </tr>
+    <% end %>
+  </table>
+</section>

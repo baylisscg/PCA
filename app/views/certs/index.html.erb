@@ -1,0 +1,22 @@
+<% content_for :head do %> 
+<%= auto_discovery_link_tag(:atom) %>
+<% end %>
+<section>
+  <h1>All Known Certificates</h1>
+  <table class="activity">
+    <thead>
+    <tr>
+      <th>ID</th><th>User DN</th><th>issuer</th><th>Events</th>
+    </tr>
+    </thead>
+    <tbody>
+      <% @certs.each do |cert|  %>
+      <tr>
+	<td><%= link_to "Cert Details", cert %></td>
+	<td><%= cert.subject_dn %></td>
+	<td><%= cert.issuer_chain[0] %></td>
+      </tr>
+      <% end %>
+    </tbody>
+  </table>
+</section>

@@ -1,0 +1,5 @@
+<h2>New Event</h2>
+<%= form_for(@event, :url=> cert_events_url(@cert)) do |f| %>
+  <%= f.text_field :action %>
+  <%= submit_tag "Create" %>
+<% end %>

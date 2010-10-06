@@ -1,0 +1,56 @@
+<section>
+  <h1>Cert Details</h1>
+  <table>
+    <colgroup>
+      <col class="name" />
+      <col class="value" />
+    </colgroup>
+    <tbody>
+    <tr>
+      <td>Subject</td><td><%=@cert.subject_dn %></td>
+    </tr>
+    <tr>
+      <td>Subject</td><td><%=@cert.issuer_dn %></td>
+    </tr>
+    <tr>
+      <td>Issuer Chain</td>
+      <td>
+	<ol>
+	  <% @cert.issuer_chain.each do |chain| %>
+	    <li><%= Cert.find(chain) %></li>
+	  <% end %>
+	</ol>
+    </tr>
+    <tr>
+      <td>Valid From</td><td><%=@cert.valid_from %></td>
+    </tr>
+    <tr>
+      <td>Valid To</td><td><%=@cert.valid_to %></td>
+    </tr>
+    <tr>
+      <td>Hash</td><td><%=@cert.hash %></td>
+    </tr>
+    <tr>
+      <td>Seen</td><td><%= @conn_count %></td>
+    </tr>
+    <tr>
+      <td>Hash</td><td><%= @cert.sha  %></td>
+    </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- issued_area sets @issued and calls block if @cert issued certificates -->
+<% issued_area @cert do %>
+test
+ <section>
+   <h1>Issued Certs</h1>
+   <% @issued.each do |x| %>
+   <%= x.subject_dn %><br />
+   <% end %>
+</section>
+<% end %>
+
+Done<br />
+ 
+
