@@ -8,6 +8,8 @@ group :test do
 end
 
 gem "bunny"
+
+gem "mongrel"
     		   
 if RUBY_PLATFORM =~ /java/ then
   # Load pure Ruby or JRuby specific libraries
