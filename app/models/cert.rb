@@ -41,29 +41,48 @@ class Cert
   field :signature
   field :proxy, :type=>Boolean
 
+  identity :type => String
+
   index :sha, :background => true
   index :subject_dn, :background => true
   index :issuer_dn, :background => true
   index :issuer_chain, :background => true
-  index :signature, :background => true
+  index :signature,
+ :background => true
  
-  key :sha
+#  key :sha
   validates_uniqueness_of :_id 
   
-
   set_callback(:save, :before) do |cert|
-    puts "Before SAVE"
+    Rails.logger.info "Before SAVE"
     cert.update_sha
+    cert._id= cert.sha
+    Rails.logger.info "SHA = #{cert.sha}"
+    Rails.logger.info "ID  = #{cert.id}"
   end
   
   set_callback(:create, :before) do |cert|
-     puts "Before CREATE"
+    Rails.logger.info "Before CREATE"
     cert.update_sha
+    cert._id= cert.sha
+    Rails.logger.info "SHA = #{cert.sha}"
+    Rails.logger.info "ID  = #{cert.id}"
   end
 
- set_callback(:update, :before) do |cert|
-    puts "Before UPDATE"
+  set_callback(:validate, :before) do |cert|
+    Rails.logger.info "Before Validate"
     cert.update_sha
+    cert._id= cert.sha
+    Rails.logger.info "SHA = #{cert.sha}"
+    Rails.logger.info "ID  = #{cert.id}"
+  end  
+
+ set_callback(:update, :before) do |cert|
+    Rails.logger.info "Before UPDATE"
+    cert.update_sha
+    cert._id= cert.sha
+    Rails.logger.info "SHA = #{cert.sha}"
+    Rails.logger.info "ID  = #{cert.id}"
   end
 
   validate :time_valid
@@ -212,8 +231,8 @@ class Cert
     hash = Digest::SHA256.new
     hash << self.subject_dn
     self.issuer_chain.each { |dn| hash << dn } unless self.issuer_chain.empty?
-    hash << self.valid_from.iso8601
-    hash << self.valid_to.iso8601
+    hash << self.valid_from.iso8601 if self.valid_from
+    hash << self.valid_to.iso8601 if self.valid_to
     self.sha = hash.hexdigest
   end
   

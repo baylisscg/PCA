@@ -9,14 +9,15 @@ end
 
 gem "bunny"
 
-gem "mongrel"
+#gem "mongrel"
     		   
 if RUBY_PLATFORM =~ /java/ then
   # Load pure Ruby or JRuby specific libraries
   gem "mongo"
   gem "bson"
   gem "jruby-openssl",">=0.7.1"
-  
+  gem "mongrel"
+
   # Grab warbler to convert Rails -> WAR servlet
   group :development do
     gem "warbler"
@@ -25,8 +26,6 @@ else
    # Load libraries with C extensions.
    gem "mongo_ext"
    gem "bson_ext"
-#   gem "unicorn"
 end
 
 gem "mongoid", ">=2.0.0.beta.19"
-

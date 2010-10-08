@@ -16,6 +16,8 @@ class Event
   
   embedded_in :connection, :inverse_of => :events
 
+  validates_presence_of :action, :created_at
+
 #  belongs_to_related :connection, :inverse_of=>:events
 
   named_scope :modified_in, lambda { |seconds| where(:created_at.gt => (Time.now-seconds).utc) }

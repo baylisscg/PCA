@@ -8,24 +8,27 @@ describe Cert do
   
   before(:all) do 
     @subject = "dc=org,dc=example,cn=test"
-    @issuer = ["dc=org,dc=example,ou=ca"]
+    @issuer = "dc=org,dc=example,ou=ca"
     @hash = "DEADBEEF"
   end
 
   before(:each) do
     @cert = Cert.find_or_initialize_by(:subject_dn=>@subject,
-                                       :issuer_chain=>@issuer,
+                                       :issuer_dn=>@issuer,
+                                       :issuer_chain=>[@issuer],
                                        :cert_hash=>@hash)
   end
 
   it "should allow creation" do
  
     @cert.subject_dn.should == @subject
-    @cert.issuer_chain.should == @issuer
+    @cert.issuer_dn.should == @issuer
     @cert.cert_hash.should == @hash
     
 #    @cert._id.class.should == BSON::ObjectID
     @cert.should be_valid
+
+    @cert.sha.should_not be_nil
   
   end
 
@@ -90,7 +93,7 @@ describe Cert do
     @cert.should == @cert
 
     other_cert = Cert.find_or_initialize_by(:subject_dn=>@subject,
-                                            :issuer_chain=>@issuer,
+                                            :issuer_dn=>@issuer,
                                             :cert_hash=>@hash)
     @cert.should == other_cert
 
@@ -102,7 +105,8 @@ describe Cert do
   it "should not allow duplication" do 
     @cert.save
     new_cert = Cert.find_or_initialize_by(:subject_dn=>@subject,
-                                          :issuer_chain=>@issuer,
+                                          :issuer_dn=>@issuer,
+                                          :issuer_chain=>[@issuer], 
                                           :cert_hash=>@hash)
 
     new_cert.should == @cert
