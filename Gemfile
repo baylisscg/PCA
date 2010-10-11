@@ -3,13 +3,20 @@ source "http://www.rubygems.org"
 # This is a Rails 3 app
 gem "rails", ">=3.0.0"
 
-group :test do
+gem "rails3-generators"
+
+# We need rspec-rails here right now
+group :development do
   gem "rspec-rails", ">= 2.0.0.beta.22"
 end
 
-gem "bunny"
+group :test do
+  gem "rspec-rails", ">= 2.0.0.beta.22" # rspec-rails isn't needed here but my be later.
+  gem "webrat"
+  gem "factory_girl_rails"
+end
 
-#gem "mongrel"
+gem "bunny"
     		   
 if RUBY_PLATFORM =~ /java/ then
   # Load pure Ruby or JRuby specific libraries

@@ -1,3 +1,4 @@
+#
 
 require 'rubygems'
 require 'rspec'
@@ -12,11 +13,11 @@ describe Event do
   it "should allow creation" do
 
     event = Event.new
-    
     event.should_not be_valid
     
     event.action = "Test"
     event.action.should == "Test"
+    event.created_at = nil # Wipe default time
     event.should_not be_valid
     
     time = DateTime.now

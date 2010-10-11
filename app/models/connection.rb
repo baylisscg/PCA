@@ -17,19 +17,18 @@ class Connection
 
   validates_presence_of :server, :peer
   
-  index [[:server, Mongo::ASCENDING ],[:peer, Mongo::ASCENDING  ],[:conn_id, Mongo::ASCENDING ]], :unique => true
+  index [[:server, Mongo::ASCENDING ],[:peer, Mongo::ASCENDING  ],[:_id, Mongo::ASCENDING ]], :unique => true
 
   index :updated_at
   index :created_at
   index :cred_id
-  index ["events.action", Mongo::DESCENDING]
-  index [["events.action",Mongo::DESCENDING],["events.created_at",Mongo::DESCENDING ]], :unique => true  
+
+  index   "events.action" #, Mongo::DESCENDING]
+  index [["events.action",Mongo::DESCENDING],["events.created_at",Mongo::DESCENDING ]]
 
   named_scope :event_within, lambda { |sec| where(:updated_at => { "$gt"=>(Time.now-sec).utc}) }
-
   named_scope :started_after,  lambda { |after|  {:where => {:created_at.gt => after }}}
-  named_scope :started_before, lambda { |before| {:where => {:created_at.lt => before }}} 
-  
+  named_scope :started_before, lambda { |before| {:where => {:created_at.lt => before }}}  
   named_scope :uses_cert, lambda { |cert| where( :cred_id => cert) }
   
   def self.within(args)
@@ -58,7 +57,16 @@ class Connection
   end
  
   def self.do_tag_count()
-    m = 'function(){ this.events.forEach( function(z){ emit( z.action , { count : 1 } ); } ); };'
+    m = <<-MAP
+function(){
+  this.events.forEach( 
+    function(z){
+      emit( z.action , { count : 1 } );
+    }
+  );
+};
+MAP
+
     r = <<-REDUCE
 function( key , values ){
   var total = 0;
@@ -67,7 +75,10 @@ function( key , values ){
   return { count : total };
 };
 REDUCE
-    Connection.collection.map_reduce(m,r)
+
+    result = Connection.collection.map_reduce(m,r,:verbose=>true,:sort=>[["value.count",Mongo::DESCENDING]])
+    
+    return result
   end
 
 end

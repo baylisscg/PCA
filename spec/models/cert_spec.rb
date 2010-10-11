@@ -13,14 +13,18 @@ describe Cert do
   end
 
   before(:each) do
-    @cert = Cert.find_or_initialize_by(:subject_dn=>@subject,
-                                       :issuer_dn=>@issuer,
-                                       :issuer_chain=>[@issuer],
-                                       :cert_hash=>@hash)
+    @cert = Cert.new(:subject_dn=>@subject,
+                     :issuer_dn=>@issuer,
+                     :issuer_chain=>[@issuer],
+                     :cert_hash=>@hash)
   end
 
   it "should allow creation" do
  
+    @subject = "dc=org,dc=example,cn=test"
+    @issuer = "dc=org,dc=example,ou=ca"
+    @hash = "DEADBEEF"
+
     @cert.subject_dn.should == @subject
     @cert.issuer_dn.should == @issuer
     @cert.cert_hash.should == @hash
@@ -31,6 +35,17 @@ describe Cert do
     @cert.sha.should_not be_nil
   
   end
+end
+
+describe Cert do
+
+  before(:each) do
+    @cert = Factory.build(:ee_min_cert)
+  end
+
+#  after(:) do
+#    @cert.destroy
+#  end
 
   it "sould not allow bad validities" do
 
@@ -39,7 +54,7 @@ describe Cert do
     
     @cert.should be_valid
     @cert.valid_to = now
-    
+ 
     @cert.valid_to.tv_sec.should == now.tv_sec
     @cert.valid_to.usec.should == 0 # Mongoid strips µ seconds from timestamps
 
@@ -51,9 +66,10 @@ describe Cert do
     @cert.valid_from.should == forward_5_seconds
     @cert.should_not be_valid
     
-    # Correct 
-    @cert.valid_from = now - 5
-    @cert.valid_to = now + 10   
+    # Correct times to 60s separation. 
+    @cert.valid_from = now - 50
+    @cert.valid_to = now + 10
+    
     @cert.should be_valid
 
     # Correct but expired
@@ -64,6 +80,7 @@ describe Cert do
   end
 
   it "should know whether it is valid" do
+
     now =  Time.at(Time.now.to_i)
     forward_5_seconds = now + 5
 
@@ -90,32 +107,61 @@ describe Cert do
   end
 
   it "should have equality" do
+
+    # Should equal itself
     @cert.should == @cert
 
-    other_cert = Cert.find_or_initialize_by(:subject_dn=>@subject,
-                                            :issuer_dn=>@issuer,
-                                            :cert_hash=>@hash)
+    other_cert = Factory.build(:ee_min_cert) #Cert.find_or_initialize_by(:subject_dn=>@subject,
+                  #                           :issuer_dn=>@issuer,
+                  #                           :cert_hash=>@hash)
+
+
+    other_cert.subject_dn.should_not be_nil
+
+    #Should equal clone of self
     @cert.should == other_cert
 
-    other_cert.subject_dn = @subject + "neql"
+    # Should not equal modified clone
+    other_cert.subject_dn = @cert.subject_dn + "neql"
     @cert.should_not == other_cert
 
   end
 
+  it "should hash properly" do
+    
+    @cert.sha.should_not be_nil
+    
+    require "digest/sha1"
+    @cert.sha.should_not == Digest::SHA256.new
+
+    old_sha =  @cert.sha
+    
+    @cert.subject_dn = @cert.subject_dn + "more stuff"
+    @cert.valid?
+    @cert.sha.should_not == old_sha
+
+  end
+
   it "should not allow duplication" do 
-    @cert.save
-    new_cert = Cert.find_or_initialize_by(:subject_dn=>@subject,
-                                          :issuer_dn=>@issuer,
-                                          :issuer_chain=>[@issuer], 
-                                          :cert_hash=>@hash)
+    
+    new_cert = Factory.build(:ee_min_cert)
+    
+    # Trigger sha calculation
+    new_cert.valid?
+    @cert.valid?
 
     new_cert.should == @cert
 
-    new_cert._id.should_not be_nil
+    @cert.sha.should == new_cert.sha
 
-    @cert._id.should == new_cert._id
+    new_cert.valid?
+    @cert.valid?
+
+    @cert.to_s.should == new_cert.to_s
+
+    @cert.sha.should == new_cert.sha
+
     @cert.delete
-    new_cert.should be_valid
   end
   
 end

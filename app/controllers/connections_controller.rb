@@ -1,12 +1,16 @@
 =begin
 =end
 
+require "bson"
+
 class ConnectionsController < ActionController::Base
   
   protect_from_forgery
 
   layout "html5.html"
   
+  rescue_from BSON::InvalidObjectId, :with =>:invalid_conn_id
+
   #
   #
   #
@@ -72,7 +76,7 @@ class ConnectionsController < ActionController::Base
         format.xml  { render :xml => result }
       end
     else
-      render "/500.html", :status=> 500
+      render "errors/500.html", :layout=>"html5.html", :status=> 500
     end
    
   end
@@ -122,19 +126,17 @@ class ConnectionsController < ActionController::Base
   #
   def add_event
 
-    @conn = Connection.find(params[:id])
-    @event = Event.new(params[:action])
-
-    @conn.events << @event
+    @event = Event.new(params[:post])
     
-    @event.save
+    @conn = Connection.find(params[:id])
+    @conn.events << @event
     @conn.upcert
     
-#    respond_to do |format|
-#      format.html { redirect_to @conn }
-#      format.json { render :json => result }
-#      format.xml  { render :xml => result }
-#    end
+    respond_to do |format|
+      format.html { redirect_to @conn }
+      format.json { render :json => result }
+      format.xml  { render :xml => result }
+    end
   end
   
   protected 
@@ -183,6 +185,17 @@ class ConnectionsController < ActionController::Base
     
     return base
     
+  end
+
+
+  def invalid_conn_id
+    Rails.logger.warn "Bad connection id #{params[:id]} from #{request.remote_ip}"
+    @error = "#{params[:id]} is an invalid connection ID"
+    respond_to do |format|
+      format.html { render "/errors/400.html", :status => 400 }
+      format.atom { render( :layout => nil) }
+      format.json { render( :layout => nil) }
+    end
   end
   
 end

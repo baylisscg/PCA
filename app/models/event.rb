@@ -9,8 +9,8 @@
 class Event
   include Mongoid::Document
   
-  field :action
-  field :created_at, :type => DateTime 
+  field :action,  :type => String
+  field :created_at, :type => DateTime, :default => DateTime.now
 
 #  index [[:action,Mongo::DESCENDING],[:created_at,Mongo::DESCENDING ]], :unique => true
   

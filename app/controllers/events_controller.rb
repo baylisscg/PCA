@@ -21,7 +21,7 @@ class EventsController < ApplicationController
   
   def index
     @types = Connection.do_tag_count.find # Event.only(:action).aggregate
-    puts "Got #{@types} events"
+#    puts "Got #{@types} events"
     respond_to do |format|
       format.html { render :index }
       format.json { render :json }

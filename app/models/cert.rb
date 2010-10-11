@@ -41,22 +41,21 @@ class Cert
   field :signature
   field :proxy, :type=>Boolean
 
-  identity :type => String
+  #identity :type => String
 
-  index :sha, :background => true
+  index :sha, :background => true, :unique=>true
   index :subject_dn, :background => true
   index :issuer_dn, :background => true
   index :issuer_chain, :background => true
-  index :signature,
- :background => true
+  index :signature, :background => true
  
 #  key :sha
-  validates_uniqueness_of :_id 
+  validates_uniqueness_of :sha
   
   set_callback(:save, :before) do |cert|
     Rails.logger.info "Before SAVE"
     cert.update_sha
-    cert._id= cert.sha
+#    cert._id= cert.sha
     Rails.logger.info "SHA = #{cert.sha}"
     Rails.logger.info "ID  = #{cert.id}"
   end
@@ -64,35 +63,41 @@ class Cert
   set_callback(:create, :before) do |cert|
     Rails.logger.info "Before CREATE"
     cert.update_sha
-    cert._id= cert.sha
+#    cert._id= cert.sha
     Rails.logger.info "SHA = #{cert.sha}"
     Rails.logger.info "ID  = #{cert.id}"
   end
 
-  set_callback(:validate, :before) do |cert|
-    Rails.logger.info "Before Validate"
+  set_callback(:validate, :after) do |cert|
+    Rails.logger.info "after Validate"
     cert.update_sha
-    cert._id= cert.sha
+#    cert._id= cert.sha
     Rails.logger.info "SHA = #{cert.sha}"
     Rails.logger.info "ID  = #{cert.id}"
   end  
-
+  
  set_callback(:update, :before) do |cert|
     Rails.logger.info "Before UPDATE"
     cert.update_sha
-    cert._id= cert.sha
+ #   cert._id= cert.sha
     Rails.logger.info "SHA = #{cert.sha}"
     Rails.logger.info "ID  = #{cert.id}"
   end
 
   validate :time_valid
-  validates_presence_of  :subject_dn, :issuer_dn, :cert_hash
-  
+  validates_presence_of :subject_dn, :issuer_dn, :cert_hash
+
+#  def initialize(attributes={})
+#    super
+#    puts self.subject_dn
+#    self.update_sha
+#  end
+ 
   #
   #
   #
   def to_s
-    out = "Cert = "
+    out = ""
     out <<         "subject: " << self.subject_dn
     out << "\n" << "issuer: " << self.issuer_dn
     out << "\n" << "issuer: " << self.issuer_chain.join(", ") if self.issuer_chain.length > 0
@@ -108,7 +113,7 @@ class Cert
   def time_valid
     if self.valid_from and self.valid_to then
       errors.add(:valid_from,
-                 " must be before the valid to date.") unless self.valid_from <= self.valid_to
+                 "must be before the valid to date. #{self.valid_from} >= #{self.valid_to}") unless self.valid_from < self.valid_to
     else
       if self.valid_from or self.valid_to then
         errors.add(:valid_from,
@@ -142,15 +147,15 @@ class Cert
                      :is_proxy => true)
   end
 
-  #
-  # Overridden
-  #
-  def ==(other)
-    return false unless other.is_a?(Cert)
-    x  =  self.subject_dn == other.subject_dn
-    x &&= self.issuer_chain  == other.issuer_chain
-    x &&= self.cert_hash  == other.cert_hash
-  end
+#  #
+#  # Overridden
+#  #
+#  def ==(other)
+#    return false unless other.is_a?(Cert)
+#    x  =  self.subject_dn == other.subject_dn
+#    x &&= self.issuer_chain  == other.issuer_chain
+#    x &&= self.cert_hash  == other.cert_hash
+#  end
 
   named_scope :subject_is, lambda { |subject| where( :subject_dn => subject ) }
 #  named_scope :issuer_chain_is, lambda { |subject| where( :subject_dn =>  Regexp.new( params[
@@ -179,15 +184,17 @@ class Cert
     asn_crt = OpenSSL::ASN1.decode(crt)
     signature = asn_crt.value[2].value.unpack('H*')[0]
 
-    sha = Cert.create_sha(subject, issuer_chain)
+    cert = Cert.new({ :subject_dn => subject,
+                      :issuer_chain => issuer_chain,
+                      :cert_hash => hash,
+                      :valid_from => valid_from,
+                      :valid_to => valid_to,
+                      :signature => signature})
+    cert.update_sha
+    
+    cert.save!
 
-    Cert.find_or_create_by({ :subject_dn => subject,
-                             :issuer_chain => issuer_chain,
-                             :cert_hash => hash,
-                             :valid_from => valid_from,
-                             :valid_to => valid_to,
-                             :signature => signature,
-                             :sha => sha})
+    return cert
   end
 
   def issued_by
@@ -201,15 +208,31 @@ class Cert
     where( "issuer_chain.0" => cert.sha )
   }
 
-  protected
-
-  def self.create_sha(subject_dn,issuer_dns)
+  def Cert.calc_sha( cert )
     hash = Digest::SHA256.new
-    hash << subject_dn
-    issuer_dns.each { |dn| hash << dn }
+    hash << cert.subject_dn if cert.subject_dn
+
+    cert.issuer_chain.each { |dn| hash << dn } unless cert.issuer_chain.empty?
+
+    hash << cert.valid_from.iso8601 if cert.valid_from
+    hash << cert.valid_to.iso8601 if cert.valid_to
     return hash.hexdigest
   end
+  
+  #
+  #
+  #
+  def ==(other)
+    return false unless other.is_a?(Cert)
+    return false unless self.valid? == other.valid?
+    return self.sha == other.sha
+  end
 
+  protected
+
+  #
+  #
+  #
   def duplicate?
     dupes = Cert.where.and(:subject_dn=>self.subject_dn,
                            :issuer_chain=>self.issuer_chain,
@@ -228,12 +251,8 @@ class Cert
   # in hex
   #
   def update_sha
-    hash = Digest::SHA256.new
-    hash << self.subject_dn
-    self.issuer_chain.each { |dn| hash << dn } unless self.issuer_chain.empty?
-    hash << self.valid_from.iso8601 if self.valid_from
-    hash << self.valid_to.iso8601 if self.valid_to
-    self.sha = hash.hexdigest
+    # calculate the sha if a value has been changed
+    self.sha = Cert.calc_sha(self) #if self.changed?
   end
   
 end

@@ -3,7 +3,7 @@ require 'spec_helper'
 describe ConnectionsController do
 
   before(:each) do
-   @conn = mock_model(Connection,
+    @conn = mock_model(Connection,
                        :server=>"server.example.org",
                        :peer=>"client.example.org")
   end
@@ -15,13 +15,17 @@ describe ConnectionsController do
     response.charset.should == "utf-8"
     response.content_type.should == "text/html"
     response.should render_template("index")
+
   end
   
    it "allow creating new connections" do
 
-    Connection.should_receive(:new).with(:server=>"server.example.org",:peer=>"client.example.org").and_return(@conn)
-    @conn.should_receive(:insert)
-#    Connection.should_receive(:insert).and_return(@conn)
+   # Connection.should_receive(:new).with(:server=>"server.example.org",
+   #                                      :peer=>"client.example.org").and_return(@conn)
+   # @conn.should_receive(:insert)
+
+    Connection.should_receive(:create).with(:server=>"server.example.org",
+                                            :peer=>"client.example.org").and_return(@conn)
     
     post :create, {:server=>"server.example.org",:peer=>"client.example.org"}
     
@@ -37,7 +41,7 @@ describe ConnectionsController do
     response.status.should == 500
     response.charset.should == "utf-8"
     response.content_type.should == "text/html"
-    response.should render_template("500.html")
+    response.should render_template("errors/500")
 
   end
   
@@ -73,22 +77,46 @@ describe  ConnectionsController, "adding to a connection" do
     post :add_cert, attribs
     
   end
-      
-  it "add event" do
-    attribs = {:action=>"Test Action"}
+end
+
+describe ConnectionsController, "adding an event" do
+
+  before(:each) do
+    @conn = mock_model(Connection,
+                       :server=>"server.example.org",
+                       :peer=>"client.example.org")
+
+    @event_attribs = {"action"=>"Test Action"}
+    @event = mock_model(Event,
+                        @event_attribs) #:action=>"Test Action")
+  end
+  
+  it "bad cert id" do
+    post( :add_event, :id=>"not an id", :post=>@attribs)
+  end
+
+  it "add a valid event" do
+   
+    attribs = {"action"=>"Test Action"}
     
-    @event = mock_model(Event,attribs)
-    @event.should_receive(:save)
-    
-    @conn.should_receive(:event).with(@event.id)
+    events = mock
+    @conn.should_receive(:events).and_return(events)
+    events.should_receive(:<<).with(@event)
     @conn.should_receive(:upcert)
-    
-    Event.should_receive(:new).with(attribs).and_return(@event)
-    
-    attribs[:id]= @conn.id    
-    post :add_event, attribs
-    response.status.should_not == 500
-    
+
+    Connection.should_receive(:find).with(@conn.id).and_return(@conn)
+    Event.should_receive(:new).with(@event_attribs).and_return(@event)
+
+    @conn.id
+
+    post( :add_event, :id=> @conn.id, :post=>attribs)
+
+    assert_response :found
+
+    assigns(:conn).should == @conn
+    assigns(:event).should == @event
+    response.status.should == 302
+ 
   end
   
 end
