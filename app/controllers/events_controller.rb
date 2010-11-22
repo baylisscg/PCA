@@ -1,7 +1,7 @@
 =begin
 =end
 
-require 'bunny'
+#require 'bunny'
 
 class EventsController < ApplicationController
 
@@ -40,6 +40,10 @@ class EventsController < ApplicationController
     end 
   end
 
+  def events
+    
+  end
+
   #
   #
   #
@@ -63,14 +67,17 @@ class EventsController < ApplicationController
   end
     
   def show
-    id = BSON::ObjectID.from_string params[:id]
-    @event = Event.criteria.id(id).first
-    respond_to do |format|
-      format.html { render :show }
-      format.atom { render :show, :layout=>nil }
-      format.xml { render :xml => @event }
+#    id = BSON::ObjectID.from_string params[:id]
+    @event = Event.where("_id"=>params[:id] ).first
+    puts "Event = #{@event}"
+
+    if @event then
+      respond_to do |format|
+        format.html { render :show }
+        format.atom { render :show, :layout=>nil }
+        format.xml { render :xml => @event }
+      end
     end
-#    render :file => "events/show.atom.builder", :layout=>nil
   end
 
   def verify_custom_authenticity_token

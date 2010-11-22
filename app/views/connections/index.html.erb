@@ -1,6 +1,6 @@
-<% content_for :head do %> 
+<% content_for :head do %>
 <%= auto_discovery_link_tag(:atom, connections_url+".atom") %>
-<% end %> 
+<% end %>
 <section>
   <h1>Current Activity</h1>
   <table class="activity">
@@ -20,17 +20,17 @@
       </tr>
     </thead>
     <tbody>
-      
-	  <% @events.each do |n| %>
+
+	  <% @conns.each do |conn| %>
 	<tr>
-	  <td><%= link_to n.peer, n %></td>
-	  <td><%= link_to n.server, n %></td>
-	  <td><%= link_to "Credential", cert_path(n.cred_id) %></td>
-	  <td><!-- %= link_to "Event", n.events[-1] % --></td>
-	  <td><%= n.elapsed %></td>
+	  <td><%= link_to conn.peer, conn %></td>
+	  <td><%= link_to conn.server, conn %></td>
+    <td><%= link_to "Credential", conn.cert %> <!-- = Cert.where(:connection_ids=>conn._id).first %--> </td>
+    <td><%= link_to "Event", conn.events[-1] %></td>
+	  <td><%= conn.elapsed %></td>
 	</tr>
       <% end %>
-     
+
     </tbody>
   </table>
 </section>

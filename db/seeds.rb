@@ -1,85 +1,55 @@
 # This file should contain all the record creation needed to seed the database with its default values.
 # The data can then be loaded with the rake db:seed (or created alongside the db with db:setup).
 #
-# Examples:
-#
-#   cities = City.create([{ :name => 'Chicago' }, { :name => 'Copenhagen' }])
-#   Mayor.create(:name => 'Daley', :city => cities.first)
 
-#require 'app/models/event'
-#require 'app/models/cert'
 
-require 'openssl'
+
+require "factory_girl"
+require "faker"
+require "openssl"
+require "pca"
 
 include OpenSSL::X509
+include PCA
 
-limit=10
+Factory.find_definitions
 
-server = "dames.nesc.gla.ac.uk:443"
-clients = (1..1).map { "client.nesc.gla.ac.uk:3566" }
+users = 10 || ENV["users"].to_i
+min_jobs = 1 || ENV["jobs-min"].to_i
+max_jobs = 100 || ENV["jobs-max"].to_i
 
-base_dn = [["DC","org"], ["DC","example"],["O","Test CA"]]
+root_cert = Factory.create(:root_cert)
+signing_cert = Factory.create(:signing_cert,:issuer_chain=>[root_cert._id])
 
-root_ca_dn = base_dn.dup << ["CN","Root Cert"]
-signing_dn =  base_dn.dup << ["CN","Signing Cert"]
-
-dn_1 = Cert.find_or_create_by( :subject_dn => Name.new(root_ca_dn).to_s,
-                               :issuer_dn => Name.new(root_ca_dn).to_s,
-                               :issuer_chain => [],
-                               :valid_from => Time.utc(2010),
-                               :valid_to => Time.utc(2011),
-                               :cert_hash => "dc53fa41" )
-
-Rails.logger.info "Root DN = #{dn_1}"
-
-dn_2 = Cert.find_or_create_by( :subject_dn =>  Name.new(signing_dn).to_s,
-                               :issuer_dn =>  Name.new(root_ca_dn).to_s,
-                               :valid_from => Time.utc(2010)+1,
-                               :valid_to => Time.utc(2011)-1,
-                               :issuer_chain => [ dn_1.sha ],
-                               :cert_hash => "dc53fa42" )
-
-Rails.logger.info "Signing DN = #{dn_2}"
-
-ee_cert_dn = [["DC","org"], ["DC","example"],["O","Test CA"],["CN","Test User"]]
-
-ee = Cert.find_or_create_by( :subject_dn =>  Name.new(ee_cert_dn).to_s,
-                             :issuer_dn =>  Name.new(signing_dn).to_s,
-                             :valid_from => Time.utc(2010)+1,
-                             :valid_to => Time.utc(2011)-1,
-                             :issuer_chain => [ dn_2.sha, dn_1.sha ],
-                             :cert_hash => "dc53fa42" )
-
-Rails.logger.info "Entity certificate #{ee}"
-
-# Create a group of proxy certs
-certs = (1..10).map do |proxy|
-  args = {}
-  args[:subject_dn] = Name.new(ee_cert_dn.dup << ["CN","#{proxy}#{Time.now.utc.usec}"]).to_s
-  args[:issuer_dn] =  Name.new(ee_cert_dn).to_s
-  args[:valid_from] = Time.now.utc
-  args[:valid_to] = (Time.now+3600*96).utc
-  args[:issuer_chain] = [ ee.sha, dn_2.sha, dn_1.sha ]
-  args[:cert_hash] = "dc53fa41#{proxy}"
-  Cert.find_or_create_by(args)
+user_dns = users.times.map do |n|
+  org = [[["O","Org 1"]],[["O","Org 2"]],[["O","Org 3"],["OU","Unit 1"]]].rand
+  base = [["DC","org"],["DC","example"]]
+  Name.new(base+org+[["CN",Faker::Name.first_name+" "+Faker::Name.last_name]]).to_s
 end
 
-def do_events
-  
-  x = [Event.new(:action => "GSI Connect")]
-  x = (1 .. (1+rand(10))).map { |m| Event.new(:action=>"R job #{m} submitted") } 
-  x <<  Event.new(:action => "GSI Disconnect")
-  #x
+user_certs = user_dns.map do |dn|
+  Factory.create(:ee_cert,
+  :subject_dn=>dn,
+  "issuer_dn"  => signing_cert.subject_dn,
+  "issuer_chain" => [signing_cert._id, root_cert._id])
 end
 
-certs.flatten.each do |cert|
-  (1..(1+limit)).each do |n|
-    x = Connection.new do |conn|
-      conn.server = server
-      conn.peer = clients[rand(limit)]
-      conn.cred = cert._id
-      conn.events = do_events # (1 .. (1+rand(10))).map { |m| Event.new(:action=>"R job submitted") }
-    end
-    x.save
+generator = EventGenerator.new
+
+user_certs.each do |cert|
+
+  hits = min_jobs + rand(max_jobs)
+
+  hits.times do |n|
+    conn = Factory.build(:connection)
+    conn.cert = cert
+    #cert.connections << conn
+    #cert.save
+    events = generator.map {|name| Factory.build(:event,:action=>name)}
+   # puts events.join("->")
+    conn.events = events #[Factory.build(:event)
+    conn.save
+    generator.reset
   end
 end
+

@@ -1,5 +1,6 @@
 # This file is copied to ~/spec when you run 'ruby script/generate rspec'
 # from the project root directory.
+
 ENV["RAILS_ENV"] ||= 'test'
 require File.expand_path("../../config/environment", __FILE__)
 
@@ -11,8 +12,11 @@ require 'factory_girl'
 Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each {|f| require f}
 
 Webrat.configure do |config|
-  config.mode = :rails
+  config.mode = :rack
 end
+
+Dir["#{File.dirname(__FILE__)}/spec/factories/**/*.rb"].each {|f| require f}
+
 
 RSpec.configure do |config|
   # == Mock Framework

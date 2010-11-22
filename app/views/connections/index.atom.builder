@@ -1,6 +1,7 @@
 xml.instruct!
 xml.feed("xmlns" => "http://www.w3.org/2005/Atom") do
   xml.title "Feed Name"
+  xml.link :rel => :hub, :href => "http://localhost:8080/publish"
   xml.link :rel => :self, :href=>connections_url+".atom"
   xml.link :rel => :alternate, :href=>connections_url
   xml.id connections_url

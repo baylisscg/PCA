@@ -6,14 +6,15 @@ PcaApp::Application.routes.draw do
   root :to => "application#index"
   match 'search' => 'application#search'
   match 'find'   => 'application#find'
-    
+
   resources :connections do
     member do
+      get  :events
       post :add_cert
       post :add_event
     end
   end
-  
+
   resources :certs do
     member do
       get :connections
@@ -21,7 +22,6 @@ PcaApp::Application.routes.draw do
     end
   end
 
-  resources :events do
-  end
+  resources :events
 
 end

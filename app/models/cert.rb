@@ -11,7 +11,7 @@ require 'openssl'
 
 =end
 module Dn
-   
+
   def check_subject_dn
     errors.add(:subject_dn,"Subject DN must be a recognisable DN") unless subject_dn =~ /^(?>(?>\/|,{0,1})[A-Za-z]{1,2}[=:][\w @]+)+$/
   end
@@ -23,35 +23,34 @@ module Dn
   def Dn.to_urn(dn)
     URI::parse("urn:dn:" << dn.split(",").map { |x| x.split("=") } .map { |y| y[0] << "=" << CGI::escape(y[1]) } .join(",").downcase)
   end
-  
+
 end
 
 class Cert
   include Mongoid::Document
-  #include Mongoid::Timestamps  
+  #include Mongoid::Timestamps
   include Dn
-  
-  field :subject_dn
-  field :issuer_dn
-  field :issuer_chain, :type => Array
+
+  references_many :connections, :inverse_of => :cert,:stored_as => :array
+
+  field :subject_dn, :index => true, :background => true
+  field :issuer_dn,  :index => true, :background => true
   field :valid_from, :type => Time
-  field :valid_to, :type => Time
-  field :cert_hash
-  field :sha
-  field :signature
-  field :proxy, :type=>Boolean
+  field :valid_to,   :type => Time
+  field :cert_hash   # The hash of the certificate
+  field :proxy,      :type=>Boolean, :default=>false # True if a RFC proxy
 
-  #identity :type => String
+  field :sha, :index => true, :background => true
 
-  index :sha, :background => true, :unique=>true
-  index :subject_dn, :background => true
-  index :issuer_dn, :background => true
-  index :issuer_chain, :background => true
-  index :signature, :background => true
- 
-#  key :sha
-  validates_uniqueness_of :sha
-  
+  field :issuer_chain, :type=>Array, :default => [], :index => true
+  field :signed,    :type=>Array, :default => [], :index => true
+
+  validate :time_valid
+  validates_presence_of :subject_dn, :issuer_dn, :cert_hash
+
+  #
+  #
+  #
   set_callback(:save, :before) do |cert|
     Rails.logger.info "Before SAVE"
     cert.update_sha
@@ -59,7 +58,10 @@ class Cert
     Rails.logger.info "SHA = #{cert.sha}"
     Rails.logger.info "ID  = #{cert.id}"
   end
-  
+
+  #
+  #
+  #
   set_callback(:create, :before) do |cert|
     Rails.logger.info "Before CREATE"
     cert.update_sha
@@ -68,14 +70,17 @@ class Cert
     Rails.logger.info "ID  = #{cert.id}"
   end
 
+  #
+  #
+  #
   set_callback(:validate, :after) do |cert|
     Rails.logger.info "after Validate"
     cert.update_sha
 #    cert._id= cert.sha
     Rails.logger.info "SHA = #{cert.sha}"
     Rails.logger.info "ID  = #{cert.id}"
-  end  
-  
+  end
+
  set_callback(:update, :before) do |cert|
     Rails.logger.info "Before UPDATE"
     cert.update_sha
@@ -84,15 +89,8 @@ class Cert
     Rails.logger.info "ID  = #{cert.id}"
   end
 
-  validate :time_valid
-  validates_presence_of :subject_dn, :issuer_dn, :cert_hash
 
-#  def initialize(attributes={})
-#    super
-#    puts self.subject_dn
-#    self.update_sha
-#  end
- 
+
   #
   #
   #
@@ -100,12 +98,12 @@ class Cert
     out = ""
     out <<         "subject: " << self.subject_dn
     out << "\n" << "issuer: " << self.issuer_dn
-    out << "\n" << "issuer: " << self.issuer_chain.join(", ") if self.issuer_chain.length > 0
+    out << "\n" << "issuer: " << self.issuer_chain.join(", ") if self.issuer_chain
     out << "\n" << "hash: " << self.cert_hash
     out << "\n" << "SHA: " << self.sha if self.sha
-    return out 
+    return out
   end
-  
+
   #
   # Time is valid if either both valid_from and valid_to are nil or
   # both are set and valid_from is before valid_to.
@@ -125,11 +123,11 @@ class Cert
   end
 
   #
-  # 
   #
-  def expired?    
+  #
+  def expired?
     now = DateTime.now
-    return true unless self.valid_from && self.valid_from <= now 
+    return true unless self.valid_from && self.valid_from <= now
     return true unless self.valid_to && now <= self.valid_to
     return false
   end
@@ -137,7 +135,7 @@ class Cert
   def issuer_cert
     Cert.criteria.where(:subject_dn=>self.issuer).all
   end
-  
+
   def proxy?
     self.is_proxy
   end
@@ -153,25 +151,25 @@ class Cert
 #  def ==(other)
 #    return false unless other.is_a?(Cert)
 #    x  =  self.subject_dn == other.subject_dn
-#    x &&= self.issuer_chain  == other.issuer_chain
+#    x &&= self.signers  == other.signers
 #    x &&= self.cert_hash  == other.cert_hash
 #  end
 
   named_scope :subject_is, lambda { |subject| where( :subject_dn => subject ) }
-#  named_scope :issuer_chain_is, lambda { |subject| where( :subject_dn =>  Regexp.new( params[
+#  named_scope :signers_is, lambda { |subject| where( :subject_dn =>  Regexp.new( params[
 
 
   def self.find_or_add(cert)
-    
+
     crt = if cert.is_a? Array then
             OpenSSL::X509::Certificate.new(cert[0])
           else
             OpenSSL::X509::Certificate.new(cert)
           end
-      
+
     subject = crt.subject.to_s
 
-    issuer_chain = if cert.is_a? Array then 
+    signers = if cert.is_a? Array then
                      cert[1..-1].map { |chain| OpenSSL::X509::Certificate.new(chain).subject.to_s }
                    else
                      [crt.issuer.to_s]
@@ -185,40 +183,41 @@ class Cert
     signature = asn_crt.value[2].value.unpack('H*')[0]
 
     cert = Cert.new({ :subject_dn => subject,
-                      :issuer_chain => issuer_chain,
+      :signers => signers,
                       :cert_hash => hash,
                       :valid_from => valid_from,
                       :valid_to => valid_to,
                       :signature => signature})
     cert.update_sha
-    
+
     cert.save!
 
     return cert
   end
 
+  def self_signed?
+    self.issuer_chain[0] == self._id and self.issuer_dn == (self.subject_dn)
+  end
+
   def issued_by
-    Cert.find(self.issuer_chain[0])
+    Cert.criteria.id(self.issuer_chain[0]).first
   end
 
   #
   #
   #
   scope :issued, lambda { |cert|
-    where( "issuer_chain.0" => cert.sha )
+    where( "issuer_chain.0" => cert._id )
   }
 
   def Cert.calc_sha( cert )
     hash = Digest::SHA256.new
     hash << cert.subject_dn if cert.subject_dn
-
-    cert.issuer_chain.each { |dn| hash << dn } unless cert.issuer_chain.empty?
-
     hash << cert.valid_from.iso8601 if cert.valid_from
     hash << cert.valid_to.iso8601 if cert.valid_to
     return hash.hexdigest
   end
-  
+
   #
   #
   #
@@ -235,25 +234,25 @@ class Cert
   #
   def duplicate?
     dupes = Cert.where.and(:subject_dn=>self.subject_dn,
-                           :issuer_chain=>self.issuer_chain,
+    :signers=>self.signers,
                            :cert_hash=>self.cert_hash
                            )
     return dupes
   end
- 
-  def dn_hierarchy_hook 
+
+  def dn_hierarchy_hook
     self.subject_dn.split(",")
   end
 
   #
   # Hash is the SHA256 hash of
-  # Subject DN, Issuer DN, Chain DNs, valid from, valid to 
+  # Subject DN, Issuer DN, Chain DNs, valid from, valid to
   # in hex
   #
   def update_sha
     # calculate the sha if a value has been changed
     self.sha = Cert.calc_sha(self) #if self.changed?
   end
-  
+
 end
 
