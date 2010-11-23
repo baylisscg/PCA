@@ -45,7 +45,12 @@ user_certs.each do |cert|
     conn.cert = cert
     #cert.connections << conn
     #cert.save
-    events = generator.map {|name| Factory.build(:event,:action=>name)}
+    parent = nil
+    events = []
+    generator.each do |name|
+      events << Factory.build(:event,:action=>name,:parent=>parent)
+      parent = events[-1].id 
+    end
    # puts events.join("->")
     conn.events = events #[Factory.build(:event)
     conn.save
