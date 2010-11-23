@@ -31,7 +31,7 @@ class ConnectionsController < ActionController::Base
     @conns = if page then query.paginate(page) else query.all end
 
     x = @conns.first
-    puts "#{x} -> \"#{x.cert}\" -> \"#{Cert.where(:connection_ids=>x._id).first}\" "
+#    puts "#{x} -> \"#{x.cert}\" -> \"#{Cert.where(:connection_ids=>x._id).first}\" "
 
     respond_to do |format|
      format.html # index.html.erb
