@@ -26,5 +26,10 @@ class Event
     Time.now - self.created_at
   end
 
+  def get_verbs
+    ["http://activitystrea.ms/schema/1.0/post",
+    "http://pca.nesc.gla.ac.uk/%s" % self.action]
+  end
+
 end
 

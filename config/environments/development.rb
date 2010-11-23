@@ -21,5 +21,6 @@ PcaApp::Application.configure do
 
 #  config.active_record.colorize_logging = true
 #  config.action_controller.colorize_logging = true
+  ActiveSupport::XmlMini.backend = 'Nokogiri'
 
 end

@@ -1,0 +1,32 @@
+#xml.instruct!
+xml.feed('xmlns'=> "http://www.w3.org/2005/Atom",
+         'xmlns:activity'=>"http://activitystrea.ms/spec/1.0/",
+	 'xmlns:pca'=>"http://pca.nesc.gla.ac.uk/ns") do
+  xml.title "Feed Name"
+  xml.link :rel => :hub, :href => "http://localhost:8080/publish"
+  xml.link :rel => :self, :href=>connection_url(@conn)
+  xml.link :rel => :alternate, :href=>connection_url(@conn)
+  xml.id @conn.id
+  xml.updated @conn.updated_at.strftime "%Y-%m-%dT%H:%M:%SZ"
+  xml.generator( "PCA generator", :uri=> "https://pca.nesc.gla.ac.uk", :version => "1.0")  
+  xml.author :class=>"service" do
+    xml.name @conn.server
+    xml.url "http://#{@conn.server}"
+  end	    
+  xml.author :class => "certificate" do
+    xml.name @conn.cert.subject_dn
+    xml.url cert_url(@conn.cert)
+  end
+  @conn.events.each do |event|
+    xml.entry do
+      xml.title event.action
+      xml.link :rel => :alternate, :href => event_url(event)
+      xml.id  event.id
+      event.get_verbs.each do |action|
+        xml["activity"].verb action
+      end
+      xml.updated event.created_at.strftime "%Y-%m-%dT%H:%M:%SZ"
+      xml.summary event.action
+    end
+  end
+end
