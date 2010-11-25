@@ -35,7 +35,7 @@ class CertsController < ApplicationController
 
     id = params[:id]   
     @cert = Cert.criteria.id(id).first()
-    @conns = Connection.uses_cert(@cert.id)
+    @conns = Connection.uses_cert(@cert)
 
     respond_to do |format|
 #      format.xhtml 

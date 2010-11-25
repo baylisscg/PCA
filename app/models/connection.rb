@@ -28,7 +28,7 @@ class Connection
   named_scope :event_within, lambda { |sec| where(:updated_at => { "$gt"=>(Time.now-sec).utc}) }
   named_scope :started_after,  lambda { |after|  {:where => {:created_at.gt => after }}}
   named_scope :started_before, lambda { |before| {:where => {:created_at.lt => before }}}
-  named_scope :uses_cert, lambda { |cert| where( :cred_id => cert) }
+  named_scope :uses_cert, lambda { |cert| where( :cert_id => cert._id) }
 
   before_save :check_cert
 

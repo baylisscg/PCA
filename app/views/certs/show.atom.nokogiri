@@ -1,0 +1,50 @@
+#xml.instruct!
+xml.feed("xmlns" => "http://www.w3.org/2005/Atom",
+         'xmlns:activity'=>"http://activitystrea.ms/spec/1.0/",
+	 'xmlns:pca'=>"http://pca.nesc.gla.ac.uk/ns",
+         "xmlns:thr"=>"http://purl.org/syndication/thread/1.0") do
+  xml.title "Feed Name"
+  xml.link :rel => :self, :href=>("%s.atom" % cert_url(@cert))
+  xml.link :rel => :alternate, :href=>cert_url(@cert)
+  xml.id_ certs_url
+  xml.updated @conns.first.created_at.strftime "%Y-%m-%dT%H:%M:%SZ" if @conns.any?
+  xml.generator( "PCA generator", :uri=> "https://pca.nesc.gla.ac.uk", :version => "1.0") 
+  
+  @conns.each do |conn|
+    conn.events.each do |event| 
+      xml.entry do
+
+        xml.author :class=>"service" do
+          xml.name conn.server
+          xml.url "http://#{conn.server}"
+        end	            
+        xml.author :class => "certificate" do
+          xml.name conn.cert.subject_dn
+          xml.url cert_url(conn.cert)
+        end
+
+        xml.title event.action
+        xml.link :rel => :alternate, :href => connection_url(event)
+        xml.id_ event._id
+        xml.updated conn.updated_at
+        xml.summary conn._id
+
+#        event.get_verbs.each do |action|
+#          xml["activity"].verb action
+#        end
+
+        xml["activity"].object do
+          xml["activity"].send("object-type","http://activitystrea.ms/schema/1.0/service") 
+          xml.id_ "id"
+          xml.summary "summary" 
+          xml.link :rel => :alternate, :type=> "text/html", :href => event_url(event)
+          xml["thr"].send("in-reply-to", :ref => event.parent, :type => "text/html", :href=>event_url(event.parent)) if event.parent
+        end
+
+        xml.content :type => :html do
+          xml.text! conn.to_s
+        end
+      end
+    end
+  end
+end
