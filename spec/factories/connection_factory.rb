@@ -23,3 +23,12 @@ Factory.define :connection, :class => "Connection" do |conn|
 #  conn.events { (10.times.map{ |n| Factory.build(:event) }).to_a }
 
 end
+
+Factory.define :test_connection, :class => "Connection" do |conn|
+  conn.server  "http://service.example.org"
+  conn.peer    "http://client.example.org"
+  conn.updated_at Time.now
+  conn.association :cert, :factory => :test_cert
+  conn.events  { |event| [event.association(:event)] }
+  
+end

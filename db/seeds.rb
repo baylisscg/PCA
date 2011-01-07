@@ -15,11 +15,13 @@ include PCA
 Factory.find_definitions
 
 users = 10 || ENV["users"].to_i
-min_jobs = 1 || ENV["jobs-min"].to_i
+min_jobs = 10 || ENV["jobs-min"].to_i
 max_jobs = 100 || ENV["jobs-max"].to_i
 
-root_cert = Factory.create(:root_cert)
-signing_cert = Factory.create(:signing_cert,:issuer_chain=>[root_cert._id])
+root_cert = Factory.build(:root_cert)
+root_cert.issuer = root_cert
+root_cert.save
+signing_cert = Factory.create(:signing_cert,:issuer=>root_cert)
 
 user_dns = users.times.map do |n|
   org = [[["O","Org 1"]],[["O","Org 2"]],[["O","Org 3"],["OU","Unit 1"]]].rand
@@ -30,8 +32,8 @@ end
 user_certs = user_dns.map do |dn|
   Factory.create(:ee_cert,
   :subject_dn=>dn,
-  "issuer_dn"  => signing_cert.subject_dn,
-  "issuer_chain" => [signing_cert._id, root_cert._id])
+#  "issuer_dn"  => signing_cert.subject_dn,
+  "issuer" => signing_cert)
 end
 
 generator = EventGenerator.new
@@ -41,8 +43,8 @@ user_certs.each do |cert|
   hits = min_jobs + rand(max_jobs)
 
   hits.times do |n|
-    conn = Factory.build(:connection)
-    conn.cert = cert
+    conn = Factory.build(:connection, :cert => cert)
+    #conn.cert = cert
     #cert.connections << conn
     #cert.save
     parent = nil

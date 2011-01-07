@@ -11,8 +11,8 @@ class Connection
 
   field :server
   field :peer
-  field :cert_id, :type=> BSON::ObjectId, :index => true, :background => true
-  #references_one :cert, :class_name => "Cert", :inverse_of=> :connections #, :stored_as => :array
+#  field :cert_id, :type=> BSON::ObjectId, :index => true, :background => true
+  referenced_in :cert, :class_name => "Cert", :inverse_of=> :connections#, :stored_as => :array
   embeds_many :events, :class_name => "Event"
 
   validates_presence_of :server, :peer
@@ -47,23 +47,23 @@ class Connection
 
   #
   #
-  #
-  def cert
-    Cert.criteria.id(self.cert_id).first
-  end
+  # 
+#  def cert
+#    Cert.criteria.id(self.cert_id).first
+#  end
 
   #
   #
   #
-  def cert=(cert)
-    if cert.kind_of? Cert
-      id = cert._id
-    else
-      id = cert
-      cert = Cert.id(cert)
-    end
-    self.cert_id = id
-  end
+#  def cert=(cert)
+#    if cert.kind_of? Cert
+#      id = cert._id
+#    else
+#      id = cert
+#      cert = Cert.id(cert)
+#    end
+#    self.cert_id = id
+#  end
 
   def to_id
     self.server + " <=> " + self.peer

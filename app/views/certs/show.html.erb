@@ -10,14 +10,14 @@
       <td>Subject</td><td><%=@cert.subject_dn %></td>
     </tr>
     <tr>
-      <td>Subject</td><td><%=@cert.issuer_dn %></td>
+      <td>Subject</td><td><%=@cert.issuer.subject_dn %></td>
     </tr>
     <tr>
       <td>Issuer Chain</td>
       <td>
 	<ol>
 	  <% @cert.issuer_chain.each do |chain| %>
-	    <li><%= Cert.find(chain) %></li>
+	    <li><%= chain.subject_dn %></li>
 	  <% end %>
 	</ol>
     </tr>
@@ -34,23 +34,30 @@
       <td>Seen</td><td><%= @conn_count %></td>
     </tr>
     <tr>
-      <td>Hash</td><td><%= @cert.sha  %></td>
+      <td>Hash</td><td><!-- %= @cert.sha  % --></td>
     </tr>
     </tbody>
   </table>
 </section>
 
-<!-- issued_area sets @issued and calls block if @cert issued certificates -->
-<% issued_area @cert do %>
-test
- <section>
-   <h1>Issued Certs</h1>
-   <% @issued.each do |x| %>
-   <%= x.subject_dn %><br />
-   <% end %>
+<section>
+<h1>Connections</h1>
+<table>
+  <% @cert.connections.each do |conn| %>
+ <tr><td><%= conn.peer %></td><td><%= conn.server %></td><td><%= link_to "details", conn %></td></tr>
+  <% end %>
+</table>
 </section>
-<% end %>
 
-Done<br />
+<!-- issued_area sets @issued and calls block if @cert issued certificates -->
+<section>
+  <h1>Issued Certs</h1>
+  <table>
+   <% @cert.signed.each do |x| %>
+   <tr><td><%= x.subject_dn %></td><td><%= link_to "details",x %></td></tr>
+   <% end %>
+  </table>
+</section>
+
  
 

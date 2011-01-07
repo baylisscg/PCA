@@ -14,7 +14,7 @@
       <tr>
 	<td><%= link_to "Cert Details", cert %></td>
 	<td><%= cert.subject_dn %></td>
-	<td><%= cert.issuer_chain[0] %></td>
+	<td><%= link_to cert.issuer.subject_dn, cert.issuer %></td>
       </tr>
       <% end %>
     </tbody>

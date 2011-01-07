@@ -30,27 +30,33 @@ end
 Factory.define :root_cert, :class => "Cert", :default_strategy => :build do |root|
 
   root.subject_dn Name.new(root_dn.to_a).to_s
-  root.issuer_dn Name.new(root_dn).to_s
+#  root.issuer_dn Name.new(root_dn).to_s
+ # root.issuer { |issuer| root._id  }
   root.valid_from Time.utc(2010)
   root.valid_to Time.utc(2011)
-
   root.cert_hash { Factory.next(:cert_hash)  }
+
+  root.after_stub do |c|
+    c.issuer = c
+ #   c.sha = Cert.calc_sha(c)
+  end
   root.after_build do |c|
-    c.sha = Cert.calc_sha(c)
+    c.issuer = c
+ #   c.sha = Cert.calc_sha(c)
   end
 end
 
 Factory.define :signing_cert, :class => "Cert", :default_strategy => :build do |cert|
   cert.subject_dn Name.new(signing_dn).to_s
-  cert.issuer_dn  Name.new(root_dn).to_s
+#  cert.issuer_dn  Name.new(root_dn).to_s
   cert.valid_from Time.utc(2010)+1
   cert.valid_to Time.utc(2011)-1
   cert.cert_hash { Factory.next(:cert_hash) }
-
+  cert.association :issuer, :factory => :root_cert
  # cert.signed_by { Cert.first(:conditions => { :subject_dn => cert.issuer_dn }) }
 
   cert.after_build do |c|
-    c.sha = Cert.calc_sha(c)
+ #   c.sha = Cert.calc_sha(c)
   end
 end
 
@@ -59,12 +65,16 @@ end
 #
 Factory.define :ee_min_cert, :class => "Cert", :default_strategy => :build do |cert|
   cert.subject_dn Name.new(ee_dn).to_s
-  cert.issuer_dn  Name.new(signing_dn).to_s
+#  cert.issuer_dn  Name.new(signing_dn).to_s
   cert.cert_hash  { Factory.next(:cert_hash) }
 #  cert.association :signers, :factory => :signing_cert
-  cert.after_build do |c|
-    c.sha = Cert.calc_sha(c)
-  end
+#  cert.after_build do |c|
+#    c.sha = Cert.calc_sha(c)
+#  end
+#  cert.after_stub do |c|
+#    puts "Stubbing"
+#    c.sha = Cert.calc_sha(c)
+#  end
 end
 
 #
@@ -75,5 +85,7 @@ Factory.define :ee_cert, :class => "Cert", :parent => "ee_min_cert" do |cert|
   cert.valid_to Time.utc(2011)-2
 end
 
-
+Factory.define :test_cert, :class => "Cert", :parent => "ee_min_cert" do |cert|
+  cert.association :issuer, :factory => :signing_cert
+end
 
