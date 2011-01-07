@@ -28,68 +28,27 @@ end
 
 class Cert
   include Mongoid::Document
-  #include Mongoid::Timestamps
   include Dn
 
-  references_many :connections, :inverse_of => :cert,:stored_as => :array
-
   field :subject_dn, :index => true, :background => true
-  field :issuer_dn,  :index => true, :background => true
   field :valid_from, :type => Time
   field :valid_to,   :type => Time
   field :cert_hash   # The hash of the certificate
   field :proxy,      :type=>Boolean, :default=>false # True if a RFC proxy
 
-  field :sha, :index => true, :background => true
+#  field :sha, :index => true, :background => true
+  
+  references_many :connections, :inverse_of => :cert #, :stored_as => :array
+  
+  referenced_in   :issuer, :class_name => "Cert", :inverse_of=> :signed
+  references_many :signed, :class_name => "Cert", :inverse_of=> :issuer, :foreign_key => :issuer_id
 
-  field :issuer_chain, :type=>Array, :default => [], :index => true
-  field :signed,    :type=>Array, :default => [], :index => true
+  field :cert # The cert as a pem file.
+
+  index :issuer
 
   validate :time_valid
-  validates_presence_of :subject_dn, :issuer_dn, :cert_hash
-
-  #
-  #
-  #
-  set_callback(:save, :before) do |cert|
-    Rails.logger.info "Before SAVE"
-    cert.update_sha
-#    cert._id= cert.sha
-    Rails.logger.info "SHA = #{cert.sha}"
-    Rails.logger.info "ID  = #{cert.id}"
-  end
-
-  #
-  #
-  #
-  set_callback(:create, :before) do |cert|
-    Rails.logger.info "Before CREATE"
-    cert.update_sha
-#    cert._id= cert.sha
-    Rails.logger.info "SHA = #{cert.sha}"
-    Rails.logger.info "ID  = #{cert.id}"
-  end
-
-  #
-  #
-  #
-  set_callback(:validate, :after) do |cert|
-    Rails.logger.info "after Validate"
-    cert.update_sha
-#    cert._id= cert.sha
-    Rails.logger.info "SHA = #{cert.sha}"
-    Rails.logger.info "ID  = #{cert.id}"
-  end
-
- set_callback(:update, :before) do |cert|
-    Rails.logger.info "Before UPDATE"
-    cert.update_sha
- #   cert._id= cert.sha
-    Rails.logger.info "SHA = #{cert.sha}"
-    Rails.logger.info "ID  = #{cert.id}"
-  end
-
-
+  validates_presence_of :subject_dn, :issuer, :cert_hash
 
   #
   #
@@ -97,10 +56,10 @@ class Cert
   def to_s
     out = ""
     out <<         "subject: " << self.subject_dn
-    out << "\n" << "issuer: " << self.issuer_dn
-    out << "\n" << "issuer: " << self.issuer_chain.join(", ") if self.issuer_chain
+    out << "\n" << "issuer: " << self.issuer.subject_dn
+    out << "\n" << "issuer_chain: " << self.issuer_chain.map {|cert| cert.subject_dn }.join(", ")
     out << "\n" << "hash: " << self.cert_hash
-    out << "\n" << "SHA: " << self.sha if self.sha
+ #   out << "\n" << "SHA: " << self.sha if self.sha
     return out
   end
 
@@ -145,20 +104,16 @@ class Cert
                      :is_proxy => true)
   end
 
-#  #
-#  # Overridden
-#  #
-#  def ==(other)
-#    return false unless other.is_a?(Cert)
-#    x  =  self.subject_dn == other.subject_dn
-#    x &&= self.signers  == other.signers
-#    x &&= self.cert_hash  == other.cert_hash
-#  end
-
   named_scope :subject_is, lambda { |subject| where( :subject_dn => subject ) }
-#  named_scope :signers_is, lambda { |subject| where( :subject_dn =>  Regexp.new( params[
+  #named_scope :issued, lambda { |cert| where(:issuer => cert._id)}
+  
+  def self.issued(cert) 
+    cert.signed
+  end
 
-
+  #
+  #
+  #
   def self.find_or_add(cert)
 
     crt = if cert.is_a? Array then
@@ -195,20 +150,20 @@ class Cert
     return cert
   end
 
+  def issuer_chain
+    Enumerator.new do |x|
+      temp = self.issuer
+      x.yield temp if temp
+      while not temp.self_signed? do
+        temp = temp.issuer
+        x.yield temp if temp
+      end
+    end
+  end
+
   def self_signed?
-    self.issuer_chain[0] == self._id and self.issuer_dn == (self.subject_dn)
+    self.issuer and self.issuer == self
   end
-
-  def issued_by
-    Cert.criteria.id(self.issuer_chain[0]).first
-  end
-
-  #
-  #
-  #
-  scope :issued, lambda { |cert|
-    where( "issuer_chain.0" => cert._id )
-  }
 
   def Cert.calc_sha( cert )
     hash = Digest::SHA256.new
@@ -224,7 +179,8 @@ class Cert
   def ==(other)
     return false unless other.is_a?(Cert)
     return false unless self.valid? == other.valid?
-    return self.sha == other.sha
+    return self._id == other._id
+    # return self.sha == other.sha
   end
 
   protected
