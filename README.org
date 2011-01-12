@@ -1,0 +1,13 @@
+* Proxy Credential Auditing Website
+
+This repository holds the [[http://pca.nesc.gla.ac.uk][PCA]] website's [[http://jekyllrb.com/][Jekyll]] source code.
+
+** Building
+
+To build the website move to the root directory and run:
+
+ #+BEGIN_EXAMPLE
+ jekyll 
+ #+END_EXAMPLE
+
+
