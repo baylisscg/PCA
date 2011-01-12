@@ -1,0 +1,26 @@
+---
+title: Atom Feed
+---
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>{{page.title}}</title>
+  <link href="{{ site.url }}{{page.url}}" rel="self" />
+  <link href="{{site.url}}" />
+  <updated>2003-12-13T18:30:02Z</updated>
+  <author>
+    <name>Christopher Bayliss</name>
+    <email>c.bayliss@nesc.gla.ac.uk</email>
+  </author>
+
+  {% for post in site.posts %} 
+  <entry>
+    <title>{{post.title}}</title>
+    <link href="{{ site.url }}{{ post.url }}" />
+    <link rel="alternate" type="text/html" href="{{ site.url }}{{ post.url }}index.html"/>
+    <id>urn:uuid:1225c695-cfb8-4ebb-aaaa-80da344efa6a</id>
+    <updated>{{ post.date | date_to_xmlschema }}</updated>
+    <summary>Some text.</summary>
+  </entry>
+ {% endfor %}
+
+</feed>

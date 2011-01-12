@@ -1,7 +1,103 @@
-section {
-    
+ body {
+    font-family:Sans-serif;
+    margin: 5em;
 }
 
-section h1 {
-    text-decoration:underline;
+article {
+    position:relative;
+    top: 3em;
+}
+
+.image {
+    margin-left: auto;
+    margin-right: auto;
+    display:block;
+    padding: 1em;
+}
+
+header h1 {
+    font-size: x-large;
+    text-align: center;
+    text-decoration: underline;
+}
+
+#abstract {
+    padding: 1em;
+    background-color: #ccc;
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    behavior:url(border-radius.htc);
+//    font-weight: bold;
+}
+
+article{
+    display: block;
+}
+
+code {
+    color: blue;
+}
+
+section{
+    display:block;
+}
+
+section h1
+{
+    font-size: large;
+    font-style: bold;
+    text-decoration: underline;
+}
+
+section h2 {
+    font-size: medium;
+    font-style: bold;
+    text-decoration: underline;
+}
+
+section#summary h2{
+
+    font-size: medium;
+
+}
+
+
+/*
+ * Styling the nav bar
+ */
+nav {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    background: #ccc;
+}
+
+nav ul {
+    margin: 0 auto;
+    width: 940px;
+    list-style: none;
+}
+
+nav ul li {
+    float: left;
+}
+
+nav ul li a {
+    display: block;
+    margin-right: 20px;
+    width: 140px;
+    font-size: 14px;
+    line-height: 3em;
+    text-align: center;
+    text-decoration: none;
+    //color: orange;
+}
+
+nav ul li a:hover {
+    color: white;
+}
+
+nav ul li.selected a {
+    color: yellow;
 }
