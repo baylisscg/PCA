@@ -5,7 +5,7 @@ gem "rails", ">=3.0.0"
 
 gem "rails3-generators"
 
-gem "oauth-plugin", ">=0.4.0.pre1"
+#gem "oauth-plugin", ">=0.4.0.pre1"
 
 # We need rspec-rails here right now
 group :development do

@@ -20,7 +20,9 @@ max_jobs = 100 || ENV["jobs-max"].to_i
 
 root_cert = Factory.build(:root_cert)
 root_cert.issuer = root_cert
+
 root_cert.save
+
 signing_cert = Factory.create(:signing_cert,:issuer=>root_cert)
 
 user_dns = users.times.map do |n|
@@ -28,6 +30,7 @@ user_dns = users.times.map do |n|
   base = [["DC","org"],["DC","example"]]
   Name.new(base+org+[["CN",Faker::Name.first_name+" "+Faker::Name.last_name]]).to_s
 end
+
 
 user_certs = user_dns.map do |dn|
   Factory.create(:ee_cert,

@@ -11,8 +11,7 @@ class Connection
 
   field :server
   field :peer
-#  field :cert_id, :type=> BSON::ObjectId, :index => true, :background => true
-  referenced_in :cert, :class_name => "Cert", :inverse_of=> :connections#, :stored_as => :array
+  referenced_in :cert, :class_name => "Cert", :inverse_of=> :connections
   embeds_many :events, :class_name => "Event"
 
   validates_presence_of :server, :peer

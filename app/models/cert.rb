@@ -38,10 +38,12 @@ class Cert
 
 #  field :sha, :index => true, :background => true
   
-  references_many :connections, :inverse_of => :cert #, :stored_as => :array
+  references_many :connections , :inverse_of => :cert #, :stored_as => :array
   
+  
+  references_and_referenced_in_many :cert
   referenced_in   :issuer, :class_name => "Cert", :inverse_of=> :signed
-  references_many :signed, :class_name => "Cert", :inverse_of=> :issuer, :foreign_key => :issuer_id
+  references_many :signed, :class_name => "Cert", :inverse_of=> :issuer, :foreign_key => :issuer_id, :validate => false # Only automatically validate  up the hierarchy to avoid infinite loops 
 
   field :cert # The cert as a pem file.
 
