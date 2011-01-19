@@ -1,6 +1,4 @@
 #
-#
-#
 
 require 'uri'
 require 'cgi'
@@ -26,21 +24,17 @@ module Dn
 
 end
 
-class Cert
-  include Mongoid::Document
+class Cert < Credential
   include Dn
 
   field :subject_dn, :index => true, :background => true
-  field :valid_from, :type => Time
-  field :valid_to,   :type => Time
   field :cert_hash   # The hash of the certificate
   field :proxy,      :type=>Boolean, :default=>false # True if a RFC proxy
 
 #  field :sha, :index => true, :background => true
   
-  references_many :connections , :inverse_of => :cert #, :stored_as => :array
-  
-  
+#  references_many :connections , :inverse_of => :cert #, :stored_as => :array
+ 
   references_and_referenced_in_many :cert
   referenced_in   :issuer, :class_name => "Cert", :inverse_of=> :signed
   references_many :signed, :class_name => "Cert", :inverse_of=> :issuer, :foreign_key => :issuer_id, :validate => false # Only automatically validate  up the hierarchy to avoid infinite loops 
@@ -63,34 +57,6 @@ class Cert
     out << "\n" << "hash: " << self.cert_hash
  #   out << "\n" << "SHA: " << self.sha if self.sha
     return out
-  end
-
-  #
-  # Time is valid if either both valid_from and valid_to are nil or
-  # both are set and valid_from is before valid_to.
-  #
-  def time_valid
-    if self.valid_from and self.valid_to then
-      errors.add(:valid_from,
-                 "must be before the valid to date. #{self.valid_from} >= #{self.valid_to}") unless self.valid_from < self.valid_to
-    else
-      if self.valid_from or self.valid_to then
-        errors.add(:valid_from,
-                   " must be set when valid_to is set.") unless self.valid_from
-        errors.add(:valid_to,
-                   " must be set when valid_from is set.") unless self.valid_to
-      end
-    end
-  end
-
-  #
-  #
-  #
-  def expired?
-    now = DateTime.now
-    return true unless self.valid_from && self.valid_from <= now
-    return true unless self.valid_to && now <= self.valid_to
-    return false
   end
 
   def issuer_cert

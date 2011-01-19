@@ -14,3 +14,9 @@ if RUBY_PLATFORM =~ /java/ then
     require 'warbler'
     Warbler::Task.new
 end
+
+
+YARD::Rake::YardocTask.new do |t|
+  t.files   = ['app/**/*.rb', 'lib/**/*.rb' ,'spec/**/*.rb']   # optional
+  t.options = [] # optional
+end

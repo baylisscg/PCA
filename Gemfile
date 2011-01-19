@@ -11,6 +11,8 @@ gem "rails3-generators"
 group :development do
   gem "faker"
   gem "rspec-rails", ">= 2.0.0.beta.22"
+  gem "yard"
+  gem "bluecloth"
 end
 
 group :test do
