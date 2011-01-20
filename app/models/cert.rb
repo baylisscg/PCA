@@ -30,12 +30,8 @@ class Cert < Credential
   field :subject_dn, :index => true, :background => true
   field :cert_hash   # The hash of the certificate
   field :proxy,      :type=>Boolean, :default=>false # True if a RFC proxy
-
-#  field :sha, :index => true, :background => true
-  
-#  references_many :connections , :inverse_of => :cert #, :stored_as => :array
- 
-  references_and_referenced_in_many :cert
+   
+#  references_and_referenced_in_many :cert
   referenced_in   :issuer, :class_name => "Cert", :inverse_of=> :signed
   references_many :signed, :class_name => "Cert", :inverse_of=> :issuer, :foreign_key => :issuer_id, :validate => false # Only automatically validate  up the hierarchy to avoid infinite loops 
 
@@ -43,7 +39,7 @@ class Cert < Credential
 
   index :issuer
 
-  validate :time_valid
+#  validate :valid
   validates_presence_of :subject_dn, :issuer, :cert_hash
 
   #
