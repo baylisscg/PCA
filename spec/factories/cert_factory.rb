@@ -16,10 +16,6 @@ signing_dn = base_dn +  [["CN","Signing Cert"]]
 ee_dn = base_dn + [["O","Test"], ["CN","Test Cert"]]
 
 
-Factory.sequence :cert_hash do |hash|
-"%06x" % rand(100000)
-end
-
 #
 # Create a root cert
 #

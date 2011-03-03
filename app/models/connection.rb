@@ -1,5 +1,6 @@
-=begin
-=end
+# encoding: utf-8
+#
+#
 
 require 'bson'
 require 'pca/time'

@@ -1,3 +1,4 @@
+# encoding: utf-8
 #
 
 require 'uri'
@@ -5,9 +6,9 @@ require 'cgi'
 require 'digest/sha1'
 require 'openssl'
 
-=begin
-
-=end
+#
+#
+#
 module Dn
 
   def check_subject_dn
@@ -24,14 +25,16 @@ module Dn
 
 end
 
+#
+# Extends credential to support X509 public keys.
+#
 class Cert < Credential
   include Dn
 
   field :subject_dn, :index => true, :background => true
   field :cert_hash   # The hash of the certificate
   field :proxy,      :type=>Boolean, :default=>false # True if a RFC proxy
-   
-#  references_and_referenced_in_many :cert
+  
   referenced_in   :issuer, :class_name => "Cert", :inverse_of=> :signed
   references_many :signed, :class_name => "Cert", :inverse_of=> :issuer, :foreign_key => :issuer_id, :validate => false # Only automatically validate  up the hierarchy to avoid infinite loops 
 
@@ -39,7 +42,6 @@ class Cert < Credential
 
   index :issuer
 
-#  validate :valid
   validates_presence_of :subject_dn, :issuer, :cert_hash
 
   #
@@ -51,18 +53,26 @@ class Cert < Credential
     out << "\n" << "issuer: " << self.issuer.subject_dn
     out << "\n" << "issuer_chain: " << self.issuer_chain.map {|cert| cert.subject_dn }.join(", ")
     out << "\n" << "hash: " << self.cert_hash
- #   out << "\n" << "SHA: " << self.sha if self.sha
     return out
   end
 
+  #
+  #
+  #
   def issuer_cert
     Cert.criteria.where(:subject_dn=>self.issuer).all
   end
 
+  #
+  #
+  #
   def proxy?
     self.is_proxy
   end
 
+  #
+  #
+  #
   def proxies
     Cert.critera.and(:subject_dn => /self.subject_dn/,
                      :is_proxy => true)
@@ -71,6 +81,9 @@ class Cert < Credential
   named_scope :subject_is, lambda { |subject| where( :subject_dn => subject ) }
   #named_scope :issued, lambda { |cert| where(:issuer => cert._id)}
   
+  #
+  #
+  #
   def self.issued(cert) 
     cert.signed
   end

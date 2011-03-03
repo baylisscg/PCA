@@ -1,21 +1,20 @@
-=begin
-=end
+# encoding: utf-8
+#
+#
+#
 
 require 'bson'
 
+#
+# The Crednetial class models the basic credential
+# with a validity period. Specific crednetial 
+# implementations extend this class.
+#
 class Credential
   include Mongoid::Document
 
   field "valid_from", :type=> Time
   field "valid_to", :type => Time
-
-  #
-  #
-  #
-  #  def initialize(args={})
-  #  self.valid_from = args[:valid_from] if args[:valid_from]
-  #  self.valid_to = args[:valid_to] if args[:valid_to]
-  #end
 
   # As we cannot save invalid certificates to only sanity check the dates.
   validate :time_valid 
