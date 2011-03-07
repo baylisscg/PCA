@@ -11,7 +11,9 @@ require 'factory_girl'
 # in ./support/ and its subdirectories.
 Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each {|f| require f}
 
-Webrat.configure do |config|
+#
+# Configure webrat
+webrat.configure do |config|
   config.mode = :rack
 end
 

@@ -5,6 +5,7 @@
 CLASS_FILES = FileList['**/*.class']
 
 require 'trinidad'
+require 'warbler'
 
 task :clean => :clobber
 
@@ -16,8 +17,7 @@ namespace :pca do
 
   desc "Create a normal GRAM run."
   task :make_good do
-    connection = Factory.build(:connection)
-
+    puts "Not implemented"
   end
 
   desc "Start an instance of the service running."
@@ -41,6 +41,23 @@ namespace :pca do
 
     Trinidad::Server.new(opts).start
     
+  end
+
+  namespace :client do
+    Warbler::Task.new("collector",
+                      Warbler::Config.new do |config|
+                        #config.jar_name = "collector"
+                        end
+                     )
+  end
+
+  namespace :service do
+  
+    Warbler::Task.new("service",
+                      Warbler::Config.new do |config|
+                        # config.jar_name = "service"
+                      end
+                        )
   end
  
 end

@@ -40,29 +40,35 @@ class EventsController < ApplicationController
     end 
   end
 
-  def events
-    
-  end
 
   #
   #
   #
   def create
     
-    cert = Cert.find_or_add(params[:cert])
-
+    cred = if param[:cred].is_a? String then  
+             Credential.criteria.id(param[id]).first() 
+           elsif param[:cred].is_a? Hash then 
+             Credential.find_or_create_by(param[:cred])
+           else
+             render :status => 404
+           end
+    
     connection = Connection.find_or_create_by(:server  => params[:service],
                                               :peer    => params[:connection], 
                                               :cred_id => cert.id, 
                                               :conn_id => params[:id])
 
-    event = Event.create(:action => params[:event],
-                         :created_at => Time.parse(params[:datestamp]))
-    event.save
-    connection.events << event
+    params[:event].each do |event|
+      Event.create(:action => event[:type],
+                   :created_at => Time.parse(event[:datestamp]))
+      event.save
+      connection.events << event
+    end
+
     connection.save
 
-    redirect_to cert_path(event.id)
+#    redirect_to cert_path(event.id)
 
   end
     

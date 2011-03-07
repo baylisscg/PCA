@@ -38,7 +38,7 @@ end
 
 group :test do
   gem "rspec-rails" # rspec-rails isn't needed here but my be later.
-  gem "webrat", "0.7.1" # Webrat 0.7.2 doesn't work with RSpec
+  gem "webrat"
   gem "factory_girl_rails"
   gem "faker"
   gem "machinist"

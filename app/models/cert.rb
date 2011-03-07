@@ -7,25 +7,6 @@ require 'digest/sha1'
 require 'openssl'
 
 #
-#
-#
-module Dn
-
-  def check_subject_dn
-    errors.add(:subject_dn,"Subject DN must be a recognisable DN") unless subject_dn =~ /^(?>(?>\/|,{0,1})[A-Za-z]{1,2}[=:][\w @]+)+$/
-  end
-
-  #
-  # Converts DN (RFC2253) to a URN with URI encoding.
-  # dc=org,dc=example,ou=test,cn=Test User => urn:dn:dc=org:dc=example:ou=test:cn=test+user
-  #
-  def Dn.to_urn(dn)
-    URI::parse("urn:dn:" << dn.split(",").map { |x| x.split("=") } .map { |y| y[0] << "=" << CGI::escape(y[1]) } .join(",").downcase)
-  end
-
-end
-
-#
 # Extends credential to support X509 public keys.
 #
 class Cert < Credential
