@@ -16,6 +16,8 @@ class Credential
   field "valid_from", :type=> Time
   field "valid_to", :type => Time
 
+  references_many :connections
+
   # As we cannot save invalid certificates to only sanity check the dates.
   validate :time_valid 
 
@@ -47,5 +49,18 @@ class Credential
     return false
   end
 
+  # Because we need to access subclasses of Credential this function is hived off into a
+  # seperate module to avoid circular dependencies.
+#  def self.(args)
+#    PCA::Credential::Tools.find_or_make(args)
+#  end
+
+  #
+  #
+  #
+  def self.find_or_initialize(args)
+    {"x509" => Cert }[args["type"]].find_or_initialize_by(args)
+  end
+  
 end
 

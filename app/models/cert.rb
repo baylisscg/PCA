@@ -10,7 +10,7 @@ require 'openssl'
 # Extends credential to support X509 public keys.
 #
 class Cert < Credential
-  include Dn
+
 
   field :subject_dn, :index => true, :background => true
   field :cert_hash   # The hash of the certificate
@@ -31,8 +31,8 @@ class Cert < Credential
   def to_s
     out = ""
     out <<         "subject: " << self.subject_dn
-    out << "\n" << "issuer: " << self.issuer.subject_dn
-    out << "\n" << "issuer_chain: " << self.issuer_chain.map {|cert| cert.subject_dn }.join(", ")
+    out << "\n" << "issuer: " << self.issuer.subject_dn if self.issuer
+#    out << "\n" << "issuer_chain: " << self.issuer_chain.map {|cert| cert.subject_dn }.join(", ") if self.issuer_chain
     out << "\n" << "hash: " << self.cert_hash
     return out
   end
@@ -108,16 +108,16 @@ class Cert < Credential
     return cert
   end
 
-  def issuer_chain
-    Enumerator.new do |x|
-      temp = self.issuer
-      x.yield temp if temp
-      while not temp.self_signed? do
-        temp = temp.issuer
-        x.yield temp if temp
-      end
-    end
-  end
+#  def issuer_chain
+#    Enumerator.new do |x|
+#      temp = self.issuer
+#      x.yield temp if temp
+#      while not temp.self_signed? do
+#        temp = temp.issuer
+#        x.yield temp if temp
+#      end
+#    end
+#  end
 
   def self_signed?
     self.issuer and self.issuer == self

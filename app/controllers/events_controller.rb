@@ -46,27 +46,33 @@ class EventsController < ApplicationController
   #
   def create
     
-    cred = if param[:cred].is_a? String then  
-             Credential.criteria.id(param[id]).first() 
-           elsif param[:cred].is_a? Hash then 
-             Credential.find_or_create_by(param[:cred])
-           else
-             render :status => 404
+    cred = if params[:cred].is_a? String then  
+             Credential.criteria.id(BSON::ObjectID.from_string(params[:cred])).first
+           elsif params[:cred].is_a? Hash then
+             Credential.find_or_initialize(params[:cred].symbolize_keys)
            end
+
+    raise ActionController::RoutingError.new('Not Found') unless cred
     
+   
+
     connection = Connection.find_or_create_by(:server  => params[:service],
                                               :peer    => params[:connection], 
-                                              :cred_id => cert.id, 
-                                              :conn_id => params[:id])
+                                              :cred_id => cred.id)
 
-    params[:event].each do |event|
-      Event.create(:action => event[:type],
-                   :created_at => Time.parse(event[:datestamp]))
-      event.save
-      connection.events << event
+    if params[:event] then
+      params[:event].each do |event|
+        Event.create(:action => event[:type],
+                     :created_at => Time.parse(event[:datestamp]))
+#        event.save
+        connection.events << event
+      end
     end
 
+    cred.save
     connection.save
+
+    render :text => "Added"
 
 #    redirect_to cert_path(event.id)
 
@@ -89,6 +95,5 @@ class EventsController < ApplicationController
   def verify_custom_authenticity_token
     # checks whether the request comes from a trusted source
   end
-
   
 end

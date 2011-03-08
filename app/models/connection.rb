@@ -12,7 +12,7 @@ class Connection
 
   field :server
   field :peer
-  referenced_in :cert, :class_name => "Cert", :inverse_of=> :connections
+  referenced_in :cred, :class_name => "Credential", :inverse_of=> :connections
   embeds_many :events, :class_name => "Event"
 
   validates_presence_of :server, :peer

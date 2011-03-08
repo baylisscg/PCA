@@ -39,9 +39,9 @@ end
 group :test do
   gem "rspec-rails" # rspec-rails isn't needed here but my be later.
   gem "webrat"
-  gem "factory_girl_rails"
   gem "faker"
   gem "machinist"
+  gem 'machinist_mongo', :require => 'machinist/mongoid' # or mongo_mapper
 end
 
 gem "delayed_job"
@@ -52,7 +52,6 @@ if RUBY_PLATFORM =~ /java/ then
   gem "mongo"
   gem "bson"
   gem "jruby-openssl"
-  gem "mongrel"
 else
    # Load libraries with C extensions.
    gem "mongo_ext"

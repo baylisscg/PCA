@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # This file is copied to ~/spec when you run 'ruby script/generate rspec'
 # from the project root directory.
 
@@ -5,7 +6,10 @@ ENV["RAILS_ENV"] ||= 'test'
 require File.expand_path("../../config/environment", __FILE__)
 
 require 'rspec/rails'
-require 'factory_girl'
+
+# Load Machinist blueprint
+
+#require File.join(RAILS_ROOT, "spec", "blueprints")
 
 # Requires supporting files with custom matchers and macros, etc,
 # in ./support/ and its subdirectories.
@@ -13,11 +17,11 @@ Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each {|f| require f}
 
 #
 # Configure webrat
-webrat.configure do |config|
+Webrat.configure do |config|
   config.mode = :rack
 end
 
-Dir["#{File.dirname(__FILE__)}/spec/factories/**/*.rb"].each {|f| require f}
+#Dir["#{File.dirname(__FILE__)}/spec/factories/**/*.rb"].each {|f| require f}
 
 
 RSpec.configure do |config|
@@ -28,6 +32,9 @@ RSpec.configure do |config|
   # config.mock_with :mocha
   # config.mock_with :flexmock
   # config.mock_with :rr
+
+  config.before(:all)    { Sham.reset(:before_all)  }
+  config.before(:each)   { Sham.reset(:before_each) }
 
   config.mock_with :rspec
 
