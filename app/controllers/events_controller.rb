@@ -55,10 +55,10 @@ class EventsController < ApplicationController
     raise ActionController::RoutingError.new('Not Found') unless cred
     
    
+    conn = params[:connection].symbolize_keys
+    conn[:cred_id] = cred.id
 
-    connection = Connection.find_or_create_by(:server  => params[:service],
-                                              :peer    => params[:connection], 
-                                              :cred_id => cred.id)
+    connection = Connection.find_or_initialize_by(conn)
 
     if params[:event] then
       params[:event].each do |event|
