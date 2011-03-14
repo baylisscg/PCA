@@ -60,15 +60,21 @@ class EventsController < ApplicationController
 
     connection = Connection.find_or_initialize_by(conn)
 
-    if params[:event] then
-      params[:event].each do |event|
-        Event.create(:action => event[:type],
-                     :created_at => Time.parse(event[:datestamp]))
-#        event.save
-        connection.events << event
-      end
+    def add_event(conn,event)
+      action = event[:action]
+      created = Time.parse(event[:datestamp])
+      conn.events << Event.new(:action => action,
+                               :created_at => created )
     end
 
+    if params[:event] then
+      if params[:event].is_a? Array then
+        params[:event].each { |e| add_event(connection,e) }
+      else
+        add_event(connection, params[:event])
+      end
+    end
+    
     cred.save
     connection.save
 
