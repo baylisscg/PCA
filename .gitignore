@@ -35,3 +35,4 @@ InstalledFiles
 .yardoc
 _yardoc
 doc/
+*.log
