@@ -5,11 +5,16 @@ require "spec/spec_helper"
 
 describe "Client API" do
 
+  #
+  #
+  #
   describe "Invalid calls" do
     #
     #
     #
     it "should reject empty calls" do
+      Credential.should_not_receive(:criteria)
+      Credential.should_not_receive(:find_or_initialize)
       post "/events"
       response.status.should == 404
     end
@@ -33,6 +38,7 @@ describe "Client API" do
       @cred_params[:type] = "x509"
 
       Credential.should_receive(:find_or_initialize).with(@cred_params).and_return(@cred)
+      Credential.should_not_receive(:criteria)
       Connection.should_receive(:find_or_initialize_by).and_return(@conn)
 
       @request = {

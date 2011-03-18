@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 
-require 'rspec'
-require 'spec_helper'
+require 'spec/spec_helper'
 
 describe Credential do
   
-  it "allow creation" do
-    x = Factory.build("cred_no_time")
+  it "allow creation with no dates" do
+    x = Credential.make_unsaved(:no_time)
     
     x.should_not be_nil
     x.should be_valid
@@ -15,33 +14,34 @@ describe Credential do
     x.valid_to.should   be_nil
   end
 
-  it "allow creation" do
-    x = Factory.build("cred_from")
+  it "allow creation with no to" do
+    x = Credential.make_unsaved(:from_only)
     
     x.should_not be_nil
     x.should_not be_valid
     
-    x.valid_from.should == Time.new(2011)
+    x.valid_from.to_f.should == Time.utc(2011).to_f
     x.valid_to.should be_nil
   end    
   
-  it "allow creation" do    
-    x = Factory.build("cred_to")
+  it "allow creation with no from" do    
+    x = Credential.make_unsaved(:to_only)
 
     x.should_not be_nil
     x.should_not be_valid
     
-    x.valid_to.should == Time.new(2012)
+    x.valid_to.should == Time.utc(2012)
   end
   
   it "allow creation" do
-    x = Factory.build("credential")
+    params = Credential.plan
+    x = Credential.make_unsaved(params) 
     
     x.should_not be_nil
     x.should be_valid
     
-    x.valid_from.should == Time.new(2011)
-    x.valid_to.should == Time.new(2012)
+    x.valid_from.should be_equal_to_time params[:valid_from]
+    x.valid_to.should be_equal_to_time params[:valid_to]
   end
   
 end
@@ -55,8 +55,8 @@ shared_examples_for "Credential" do
     @cred.should_not be_nil
     @cred.should be_valid
     
-    @cred.valid_from.should == @valid_from
-    @cred.valid_to.should == @valid_to
+    @cred.valid_from.should be_equal_to_time @valid_from
+    @cred.valid_to.should be_equal_to_time @valid_to
   end
   
   it "should stop being valid when valid_from is deleted" do    
@@ -102,9 +102,10 @@ describe Credential do
   it_should_behave_like "Credential"
   
   before(:each) do
-    @cred = Factory.build("credential")
-    @valid_from = Time.new(2011)
-    @valid_to   = Time.new(2012)
+    params = Credential.plan
+    @cred =  Credential.make_unsaved(params) 
+    @valid_from = params[:valid_from]
+    @valid_to   =  params[:valid_to]
   end
   
 end

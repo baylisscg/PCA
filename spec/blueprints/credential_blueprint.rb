@@ -10,3 +10,19 @@ Credential.blueprint do
   valid_to
 end
 
+Credential.blueprint(:no_time) do
+  valid_from { nil }
+  valid_to   { nil }
+end
+
+Credential.blueprint(:from_only) do
+  valid_from { Time.utc(2011) }
+  valid_to   { nil }
+end
+
+Credential.blueprint(:to_only) do
+  valid_from { nil }
+  valid_to   { Time.utc(2012) }
+end
+
+

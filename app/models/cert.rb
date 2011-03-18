@@ -23,7 +23,7 @@ class Cert < Credential
 
   index :issuer
 
-  validates_presence_of :subject_dn, :issuer, :cert_hash
+  validates_presence_of :subject_dn, :cert_hash
 
   #
   #
@@ -41,7 +41,7 @@ class Cert < Credential
   #
   #
   def issuer_cert
-    Cert.criteria.where(:subject_dn=>self.issuer).all
+    Cert.criteria.id(self.issuer).all
   end
 
   #

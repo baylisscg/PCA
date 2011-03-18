@@ -5,13 +5,13 @@ require 'spec_helper'
 
 
 
-describe AuditController do 
+#describe AuditController do 
 
   
 
-  it "should allow post" do
+#  it "should allow post" do
     
-  end
+#  end
   
 
-end
+#end
