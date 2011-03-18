@@ -9,15 +9,6 @@ describe EventsController do
   #
   #
   #
-  before(:each) do
-    Factory.build(:root_cert)
-    Factory.build(:signing_cert)
-    Factory.build(:ee_cert)
-  end
-
-  #
-  #
-  #
   it "should render index" do
 
     tag_count = mock
