@@ -1,5 +1,6 @@
 # Use locked gems if present.
 begin
+
   require File.expand_path('../../.bundle/environment', __FILE__)
 
 rescue LoadError

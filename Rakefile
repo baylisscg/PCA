@@ -10,10 +10,10 @@ require 'rake/rdoctask'
 PcaApp::Application.load_tasks
 
 # If we are using jruby enable Warbler
-if RUBY_PLATFORM =~ /java/ then
-    require 'warbler'
-    Warbler::Task.new
-end
+# if RUBY_PLATFORM =~ /java/ then
+#     require 'warbler'
+#     Warbler::Task.new
+# end
 
 
 YARD::Rake::YardocTask.new do |t|

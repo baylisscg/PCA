@@ -1,5 +1,6 @@
 
-module PCA
+module PCA::Generator
+
 
   class EventGenerator
     include Enumerable

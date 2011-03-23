@@ -12,18 +12,24 @@ end
 
 class CertFactory
   
-  def self.make_root
-     x = Cert.make( :subject_dn => "cn=Root Cert,dc=example,dc=org",
-                   :cert_hash  => "0123456789abcdef" )
+  #
+  #
+  #
+  def self.make_root(args)
+    x = Cert.make(args)
     x.issuer = x._id
     return x
   end
 
-  @@root = CertFactory.make_root
-
+  @@root = CertFactory.make_root(:subject_dn => "cn=Root Cert,dc=example,dc=org",
+                                 :cert_hash  => "0123456789abcdef")
+  #
+  #
+  #
   def self.make(args)
+    
     x = Cert.make(args)
-    x.issuer = @@root._id
+    x.issuer = args[:issuer] || @@root._id
     return x
   end
 
