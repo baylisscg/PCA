@@ -30,7 +30,7 @@ class Connection
   named_scope :started_before, lambda { |before| {:where => {:created_at.lt => before }}}
   named_scope :uses_cert, lambda { |cert| where( :cert_id => cert._id) }
 
-  before_save :check_cert
+  before_save :check_cred
 
   def self.within(args)
     query = { }
@@ -96,19 +96,19 @@ REDUCE
 
   protected
 
-  def check_cert
-    cert = Cert.criteria.id(self.cert_id).first
-    if cert
-
-    else
-      errors.add(:cert_id,"Supplied cert id does not exist.")
-    end
+  #
+  #
+  #
+  def check_cred
+    errors.add(:cert,"Supplied cert id does not exist.") unless self.cred
   end
 
+  #
+  #
+  #
   def update_cert
-    cert = Cert.criteria.id(self.cert_id).first
-    cert.connections << self
-    cert.save
+    cret.connections << self
+    cred.save
   end
 
 

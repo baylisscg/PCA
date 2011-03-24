@@ -32,22 +32,38 @@ module PCA
           params[:issuer] = @roots[rand(@root_limit)]  
           CertFactory.make(params)
         end
+
+        @active_connections = [nil]
+
+        @events = @events_limit.times { |n| self.add_event }
+
+      end
+      
+      #
+      #
+      #
+      def add_event
         
-        self.pick_start
-        # @events = @events_limit.times.map do |n|
-          
-        # end
+        connection = @active_connections[rand(@active_connections.length)]          
+        
+        if not connection
+          # Create a new connection
+          user  = @users[rand(@user_limit)]
+          start = self.pick_start
+          connection = Connection.make()
+          connection.cred = user
+        end
+        event = Event.new(:created_at=>start,:action=>"Test")
+        connection.events << event 
 
       end
 
+
       #
       #
       #
-      def pick_start
-        range = @end_date - @start_date
-        start = rand(range)
-        puts "Range = #{range} start = #{@start_date+start}"
-        start
+      def pick_start(t_start=@start_date,t_end=@end_date)
+        rand(t_end - t_start)
       end
 
     end

@@ -20,17 +20,15 @@
       </tr>
     </thead>
     <tbody>
-
-	  <% @conns.each do |conn| %>
-	<tr>
-	  <td><%= link_to conn.peer, conn %></td>
-	  <td><%= link_to conn.server, conn %></td>
-    <td><%= link_to "Credential", conn.cert %> <!-- = Cert.where(:connection_ids=>conn._id).first %--> </td>
-    <td><%= link_to "Event", conn.events[-1] %></td>
-	  <td><%= conn.elapsed %></td>
-	</tr>
+      <% @conns.each do |conn| %>
+      <tr>
+	<td><%= link_to conn.peer, conn %></td>
+	<td><%= link_to conn.server, conn %></td>
+	<td><%= link_to "Credential", conn.cred %></td>
+	<td><%= link_to "Event", conn.events[-1] %></td>
+	<td><%= conn.elapsed %></td>
+      </tr>
       <% end %>
-
     </tbody>
   </table>
 </section>
