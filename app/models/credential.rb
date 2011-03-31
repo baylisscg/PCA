@@ -10,16 +10,18 @@ require 'bson'
 # with a validity period. Specific crednetial 
 # implementations extend this class.
 #
-class Credential
-  include Mongoid::Document
+class Credential < Entity
 
   field "valid_from", :type=> Time
   field "valid_to", :type => Time
-
-  references_many :connections
-
+ 
+  belongs_to :user, :class_name => "User", :inverse_of=> :credentials
+ 
   # As we cannot save invalid certificates to only sanity check the dates.
   validate :time_valid 
+
+  # Index the "user" column
+  index :user_id
 
   #
   # Time is valid if either both valid_from and valid_to are nil or

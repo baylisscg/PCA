@@ -4,16 +4,10 @@
 
 require 'bson'
 
-class Connection
-  include Mongoid::Document
+class User < Person
 
-  field "name"
-
-  # Can have many update endpoints
-  embeds_many "update_endponts", :class_name => "Endpoint"
-
-  references_many "connections", :class_name => "Connection"
-
-  embeds_many "credentials", :class_name => "Credential"
+  Object_Type = "http://pca.nesc.gla.ac.uk/schema/objects/user"
+  
+  has_many :credentials, :class_name => "Credential", :inverse_of => :user
 
 end

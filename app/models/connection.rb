@@ -5,15 +5,15 @@
 require 'bson'
 require 'pca/time'
 
-class Connection
-  include Mongoid::Document
-  include Mongoid::Timestamps
+class Connection < Entity
   include TimeTools
+
+  Object_Type = "http://pca.nesc.gla.ac.uk/schema/object/connect"
 
   field :server
   field :peer
   referenced_in :cred, :class_name => "Credential", :inverse_of=> :connections
-  embeds_many :events, :class_name => "Event"
+  references_many :events, :class_name => "Event"
 
   validates_presence_of :server, :peer
 

@@ -22,33 +22,44 @@ module PCA
         @start_date = args[:start_date] || (Time.now - 3628800) # Start 6 weeks ago
         @end_date   = args[:end_date]   || Time.now 
         
+        @users = @user_limit.times.map do |n|
+          User.make
+        end
+
         # Create root certs
         @roots = @root_limit.times.map { |n| CertFactory.make_root( Cert.plan ) }
         @roots.each {|root| root.save }
         
         # Create user certs
-        @users = @user_limit.times.map do |n|
-          params = Cert.plan
-          params[:issuer] = @roots[rand(@root_limit)]  
-          CertFactory.make(params)
+        @user_cert = @users.each.map do |user|
+          x = CertFactory.make(:user => user, 
+                               :subject_dn => "cn=#{user.first_name} #{user.last_name},dc=example,dc=org",
+                               :cert_hash=>"0xDEADBEEF",
+                               :issuer => random(@roots))
+          return x
         end
-
+        
+        @users.each {|user| user.save; puts "user #{user.name} #{user.credentials}"; }
+        @user_cert.each {|cert| cert.save }
+        
         @active_connections = [nil]
 
         @events = @events_limit.times { |n| self.add_event }
 
       end
       
+      def random(array); array[rand(array.length)]; end
+
       #
       #
       #
       def add_event
         
-        connection = @active_connections[rand(@active_connections.length)]          
+        connection = random(@active_connections) #[rand(@active_connections.length)]          
         
         if not connection
           # Create a new connection
-          user  = @users[rand(@user_limit)]
+          user  = random(@users) #[rand(@user_limit)]
           start = self.pick_start
           connection = Connection.make()
           connection.cred = user

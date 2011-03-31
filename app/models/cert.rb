@@ -11,6 +11,7 @@ require 'openssl'
 #
 class Cert < Credential
 
+  def object_type; "http://pca.nesc.gla.ac.uk/schema/object/cert"; end
 
   field :subject_dn, :index => true, :background => true
   field :cert_hash   # The hash of the certificate
@@ -29,11 +30,10 @@ class Cert < Credential
   #
   #
   def to_s
-    out = ""
-    out <<         "subject: " << self.subject_dn
+    out = "subject: #{self.subject_dn}"
     out << "\n" << "issuer: " << self.issuer.subject_dn if self.issuer
 #    out << "\n" << "issuer_chain: " << self.issuer_chain.map {|cert| cert.subject_dn }.join(", ") if self.issuer_chain
-    out << "\n" << "hash: " << self.cert_hash
+    out << "\nhash: #{self.cert_hash}\n"
     return out
   end
 

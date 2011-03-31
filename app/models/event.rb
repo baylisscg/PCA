@@ -6,8 +6,9 @@
 
 =end
 
-class Event
-  include Mongoid::Document
+class Event < Entity
+
+  Object_Type = "http://pca.nesc.gla.ac.uk/schema/objects/event"
 
   class EventTypeNotFound < NameError; end
 
@@ -17,7 +18,7 @@ class Event
 
 #  index [[:action,Mongo::DESCENDING],[:created_at,Mongo::DESCENDING ]], :unique => true
 
-  embedded_in :connection, :inverse_of => :events
+  referenced_in :connection, :inverse_of => :events
 
   validates_presence_of :action, :created_at
 

@@ -29,6 +29,7 @@ class CertFactory
   def self.make(args)
     
     x = Cert.make(args)
+    x.user   = args[:user] if args[:user]
     x.issuer = args[:issuer] || @@root._id
     return x
   end
