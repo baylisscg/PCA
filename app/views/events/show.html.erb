@@ -6,10 +6,10 @@
   <h1>Event Details</h1>
   <table class="activity">
     <tr>
-      <td>Connection</td><td>< %= link_to "connection", @event.connection % ></td>
+      <td>Connection</td><td><%= link_to "connection", @event.connection %></td>
     </tr>
     <tr>      
-      <td>Cert</td><td>< %= link_to "cert", @event.connection.cred % ></td>
+      <td>Cert</td><td><%= link_to "cert", @event.connection.cred %></td><td><%=  @event.connection.cred.class %></td>
     </tr>
     <tr>
       <td>Action</td>

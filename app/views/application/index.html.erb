@@ -1,10 +1,16 @@
 <section>
   <h1>Current Activity </h1>
   <table id="activity" class="activity">
-    <% @events.each do |n| %>
+    <% @connections.each do |connection| %>
     <tr>
-      <td><%= n.server %></td><td><%= n.peer %></td><td><%= n.updated_at %></td>
+      <td><%= connection.server %></td>
+      <td><%= connection.peer %></td>
+      <td><%= connection.events.length %></td>
+      <td><%= connection.first_event.action %></td>
+      <td><%= connection.last_event.action %></td>
     </tr>
     <% end %>
   </table>
+  Page <%= @page %> of <%= @pages %> <br />
+  <%= link_to "First", url_for(:action => 'index') %> <%= link_to "Next", url_for(:action => 'index',:page=>@page+1) %>
 </section>

@@ -26,7 +26,7 @@
 	<td><%= link_to conn.server, conn %></td>
 	<td><%= link_to "Credential", conn.cred %></td>
 	<td><%= link_to "Event", conn.events[-1] %></td>
-	<td><%= conn.elapsed %></td>
+	<td><%= conn.last_event.created_at.to_time - conn.first_event.created_at.to_time %></td>
       </tr>
       <% end %>
     </tbody>

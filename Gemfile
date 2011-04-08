@@ -11,8 +11,6 @@ gem "rake"
 gem "sinatra"
 gem "nokogiri"
 
-#gem "oauth-plugin", ">=0.4.0.pre1"
-
 group :production do
 
   gem "warbler"
@@ -37,6 +35,7 @@ group :development do
 end
 
 group :test do
+  gem "html5"
   gem "rspec-rails" # rspec-rails isn't needed here but my be later.
   gem "webrat"
   gem "faker"

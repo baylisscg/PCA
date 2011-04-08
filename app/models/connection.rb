@@ -12,25 +12,32 @@ class Connection < Entity
 
   field :server
   field :peer
-  referenced_in :cred, :class_name => "Credential", :inverse_of=> :connections
-  references_many :events, :class_name => "Event"
+
+  belongs_to :cred, :class_name => "Credential", :inverse_of=> :connections
+  has_many :events, :class_name => "Event", :inverse_of=>:connection
 
   validates_presence_of :server, :peer
 
   index [[:server, Mongo::ASCENDING ],[:peer, Mongo::ASCENDING  ],[:_id, Mongo::ASCENDING ]], :unique => true
-
-  index :updated_at
-  index :created_at
-
-  index   "events.action" #, Mongo::DESCENDING]
-  index [["events.action",Mongo::DESCENDING],["events.created_at",Mongo::DESCENDING ]]
 
   named_scope :event_within, lambda { |sec| where(:updated_at => { "$gt"=>(Time.now-sec).utc}) }
   named_scope :started_after,  lambda { |after|  {:where => {:created_at.gt => after }}}
   named_scope :started_before, lambda { |before| {:where => {:created_at.lt => before }}}
   named_scope :uses_cert, lambda { |cert| where( :cert_id => cert._id) }
 
+
   before_save :check_cred
+
+  def created_at; self.first_event.created_at end
+  def updated_at; self.last_event.created_at end
+
+  def last_event
+    self.events.ascending(:created_at).first
+  end
+
+  def first_event
+    self.events.descending(:created_at).first
+  end
 
   def self.within(args)
     query = { }

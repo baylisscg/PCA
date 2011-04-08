@@ -1,6 +1,12 @@
-=begin
-=end
+#
+#
+#
+#
 
+
+#
+#
+#
 class ApplicationController < ActionController::Base
   protect_from_forgery
 
@@ -10,8 +16,10 @@ class ApplicationController < ActionController::Base
   #
   #
   def index
-    
-    @events =  Connection.order_by([:updated_at,:desc]).paginate({ :page=>1, :per_page=>10 })
+
+    @page = 1 || params[:page]
+    @connections = Connection.order_by([:updated_at,:desc]).paginate({ :page=>@page, :per_page=>10 })
+    @pages = Connection.count 
     
     respond_to do |format|
       format.html # index.html.erb 

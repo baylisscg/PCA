@@ -15,7 +15,8 @@ class Credential < Entity
   field "valid_from", :type=> Time
   field "valid_to", :type => Time
  
-  belongs_to :user, :class_name => "User", :inverse_of=> :credentials
+  belongs_to :user,        :class_name => "User",     :inverse_of=> :credentials
+  has_many   :connections, :class_name=>"Connection", :inverse_of=> :credential
  
   # As we cannot save invalid certificates to only sanity check the dates.
   validate :time_valid 
