@@ -13,7 +13,7 @@ class Connection < Entity
   field :server
   field :peer
 
-  belongs_to :cred, :class_name => "Credential", :inverse_of=> :connections
+  belongs_to :credential, :class_name => "Credential", :inverse_of=> :connections
   has_many :events, :class_name => "Event", :inverse_of=>:connection
 
   validates_presence_of :server, :peer
@@ -107,7 +107,7 @@ REDUCE
   #
   #
   def check_cred
-    errors.add(:cert,"Supplied cert id does not exist.") unless self.cred
+    errors.add(:cert,"Supplied cert id does not exist.") unless self.credential
   end
 
   #

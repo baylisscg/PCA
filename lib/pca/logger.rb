@@ -20,8 +20,8 @@ class Logger
   @@loggers = {}
   
   def initialize(name)
-    @logger = Java::OrgSlf4j::LoggerFactory.get_logger(name)
-    @@loggers[name] = @logger
+    @logger = Java::OrgSlf4j::LoggerFactory.get_logger(name.to_str)
+    @@loggers[name.to_str] = @logger
   end
 
   def info(message,*args)
@@ -33,8 +33,8 @@ class Logger
   end
 
   def self.get_logger(name)
-    @@loggers[name] if  @@loggers[name]
-    Logger.new(name)
+    @@loggers[name.to_str] if  @@loggers[name.to_str]
+    Logger.new(name.to_str)
   end
 
 end

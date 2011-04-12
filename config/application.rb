@@ -1,15 +1,18 @@
+#
+#
+#
+
 require File.expand_path('../boot', __FILE__)
 
 require "action_controller/railtie"
 require "action_mailer/railtie"
 require "active_resource/railtie"
 require "rails/test_unit/railtie"
-
 require "mongoid/railtie"
 
 # If you have a Gemfile, require the gems listed there, including any gems
 # you've limited to :test, :development, or :production.
-Bundler.require(:default, Rails.env) if defined?(Bundler)
+Bundler.require(:default, Rails.env) #if defined?(Bundler)
 
 module PcaApp
   class Application < Rails::Application
@@ -44,6 +47,7 @@ module PcaApp
     end
 
     # Configure sensitive parameters which will be filtered from the log file.
-    config.filter_parameters << :password
+    config.filter_parameters += [:password, :password_confirmation]
+
   end
 end

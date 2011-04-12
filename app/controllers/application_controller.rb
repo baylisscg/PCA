@@ -25,6 +25,7 @@ class ApplicationController < ActionController::Base
       format.html # index.html.erb 
       format.xml 
     end
+
   end
 
   #
@@ -81,4 +82,7 @@ class ApplicationController < ActionController::Base
     @hits = query
   end
   
+  # Private helper functions.
+  private
+
 end

@@ -1,0 +1,23 @@
+<section id="user_details">
+  <h1><%= "#{@user.first_name} #{@user.last_name}" %></h1>
+  <dl>
+    <dt>First Name</dt>
+    <dd><%= @user.first_name %></dd>
+    <dt>Last Name</dt>
+    <dd><%= @user.last_name %></dd>
+    <dt></dt>
+    <dd>
+      <table id="connections" >
+	<% for cred in @user.credentials %>
+	<tr>
+	  <td><%= cred._type %></td>
+	  <td><%= cred.valid_from %></td>
+	  <td><%= cred.valid_to %></td>
+	  <td><%= cred.connections.count %></td>
+	  <td><%= link_to "details", cred %></td>
+	</tr>
+	<% end %>
+      </table>
+    </dd>
+  </dl>
+</section>

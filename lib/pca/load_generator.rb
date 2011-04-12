@@ -30,9 +30,9 @@ module PCA
         @logger = Logger.get_logger("LoadGenerator")
         @logger.info "Test"
 
-        @root_limit = args[:root]   || 5     # Default to 5 root cas 
-        @user_limit = args[:users]  || 100    # Default to 100 users
-        @events_limit = args[:events] || 10**3 # Default to creating 10000 events
+        @root_limit = args[:root]   || 2     # Default to 2 root cas 
+        @user_limit = args[:users]  || 10    # Default to 10 users
+        @events_limit = args[:events] || 10**3 # Default to creating 1000 events
         @start_date = args[:start_date] || (Time.now - 3628800) # Start 6 weeks ago
         @end_date   = args[:end_date]   || Time.now 
         
@@ -65,8 +65,6 @@ module PCA
         end
 
         @logger.info "Made {} users",@users.length
-
-        #@user_cert.each {|cert| cert.save }
         
         @active_connections = [nil]
 
@@ -90,7 +88,7 @@ module PCA
         cred  = random(user.credentials)
 
         connection = Connection.make
-        connection.cred = cred
+        connection.credential = cred
         current_start = start_time
         picked_end    = pick_start( start_time, end_time)
         
@@ -105,7 +103,6 @@ module PCA
                      else
                        Event.make(:created_at=>current_start,:action=>event.value)
                      end
-          @logger.info "Event #{event.value} @ #{current_start}"
           current_start += time_step
           connection.events << new_event
           new_event.save
@@ -120,14 +117,14 @@ module PCA
       #
       def add_event
         
-        connection = random(@active_connections) #[rand(@active_connections.length)]          
+        connection = random(@active_connections)
         
         if not connection
           # Create a new connection
-          user  = random(@users) #[rand(@user_limit)]
+          user  = random(@users)
           start = self.pick_start
           connection = Connection.make
-          connection.cred = user
+          connection.credential = user
           connection.save
         end
         event = Event.make(:created_at=>start,:action=>"Test")
@@ -146,16 +143,9 @@ module PCA
       #
       #
       def pick_start(t_start=@start_date,t_end=@end_date)
-
         x = LoadGenerator.to_time(t_start)
         y = LoadGenerator.to_time(t_end)
-
-#        @logger.info "#{x.class} #{y.class}"
-
-        diff = y-x
-        
-        #@logger.info "#{x} #{y} = #{diff}"
-        x + rand(diff)
+        x + rand(y-x)
      end
 
     end

@@ -46,9 +46,8 @@ class ConnectionsController < ActionController::Base
   #
   def show
 
-#    id =  BSON::ObjectID.from_string params[:id]
-    @conn = Connection.find(params[:id])
-#    @conn = Connection.criteria.id(id).first
+#    @conn = Connection.find(params[:id])
+    @conn = Connection.criteria.for_ids(id).first
 
     respond_to do |format|
       format.html # index.html.erb
@@ -67,11 +66,11 @@ class ConnectionsController < ActionController::Base
 
     @connection = Connection.new({:server=>server,:peer=>peer})
 
-    Rails.logger.info {"@connection = #{@connection.id}"}
+    Rails.logger.info {"@connection = #{@connection._id}"}
 
     if @connection.valid? then
 
-      Rails.logger.info { "Creating new connection #{@connection.id}" }
+      Rails.logger.info { "Creating new connection #{@connection._id}" }
 
       @connection.save
 
@@ -93,7 +92,7 @@ class ConnectionsController < ActionController::Base
   #
   def add_cert
 
-    @conn = Connection.find(params[:id])
+    @conn = Connection.criteria.for_ids(params[:id])
 
     elements = [:subject_dn, :issuer_chain,:valid_from,:valid_to]
 
@@ -116,7 +115,7 @@ class ConnectionsController < ActionController::Base
 
       # save the cred and update the connection
       cert.upcert
-      @conn.cred_id = cert.id
+      @conn.cred_id = cert._id
       @conn.upcert
 
       respond_to do |format|
@@ -135,7 +134,7 @@ class ConnectionsController < ActionController::Base
 
     @event = Event.new(params[:post])
 
-    @conn = Connection.find(params[:id])
+    @conn = Connection.criteria.for_ids(params[:id]).first
     @conn.events << @event
     @conn.upcert
 

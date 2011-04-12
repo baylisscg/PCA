@@ -5,11 +5,13 @@ source :rubygems
 # This is a Rails 3 app
 gem "rails", ">=3.0.0"
 
-gem "rails3-generators"
+#gem "rails3-generators"
 
 gem "rake"
-gem "sinatra"
+#gem "sinatra"
 gem "nokogiri"
+gem "omniauth"
+gem "devise", ">= 1.2.0"
 
 group :production do
 

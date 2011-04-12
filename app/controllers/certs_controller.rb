@@ -34,7 +34,7 @@ class CertsController < ApplicationController
 #   Rails.logger.warn "Formats = #{request.headers["HTTP_ACCEPT"]}"
 
     id = params[:id]   
-    @cert = Cert.criteria.id(id).first()
+    @cert = Cert.criteria.for_ids(id).first()
     @conns = Connection.uses_cert(@cert)
 
     respond_to do |format|

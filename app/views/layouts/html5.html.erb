@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <title>Proxy Credential Auditing</title>
     <%= stylesheet_link_tag "main"  %>
     <%= javascript_include_tag "prototype" %>
     <%= yield :head %>
+    <%= csrf_meta_tag %>
   </head>
   <body>
     <%= render "shared/menu"  %> 

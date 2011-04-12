@@ -14,7 +14,9 @@
       <tr>
 	<td><%= link_to "Cert Details", cert %></td>
 	<td><%= cert.subject_dn %></td>
+	<% if cert.issuer %>
 	<td><%= link_to cert.issuer.subject_dn, cert.issuer %></td>
+	<% end %>
       </tr>
       <% end %>
     </tbody>

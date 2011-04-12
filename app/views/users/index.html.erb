@@ -1,0 +1,11 @@
+<section>
+  <h1>Users</h1>
+  <table id="users" class="users">
+    <% @users.each do |user| %>
+    <tr>
+      <td><%= link_to "#{user.first_name} #{user.last_name}", user %></td>
+    </tr>
+    <% end %>
+  </table>
+</section>
+
