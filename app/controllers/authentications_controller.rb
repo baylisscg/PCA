@@ -41,7 +41,7 @@ class AuthenticationsController < ApplicationController
   # POST /authentications.xml
   def create
     auth = request.env["omniauth.auth"]
-    render :text => auth.to_xml
+    render :text => auth.to_yaml
 
     # @authentication = Authentication.new(params[:authentication])
 

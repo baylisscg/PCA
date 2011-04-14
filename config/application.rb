@@ -49,5 +49,11 @@ module PcaApp
     # Configure sensitive parameters which will be filtered from the log file.
     config.filter_parameters += [:password, :password_confirmation]
 
+    require 'openid/store/filesystem'
+    config.middleware.use OmniAuth::Builder do
+      provider :open_id, OpenID::Store::Filesystem.new('/tmp/openid'), :name => 'google', :identifier => 'https://www.google.com/accounts/o8/id'
+      provider :open_id,  OpenID::Store::Filesystem.new('/tmp/openid'), :name => 'yahoo',  :identifier => 'yahoo.com'
+    end
+
   end
 end

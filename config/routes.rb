@@ -1,18 +1,18 @@
-PcaApp::Application.routes.draw do
+#
+#
+#
 
-  resources :authentications
+PcaApp::Application.routes.draw do
 
   # The priority is based upon order of creation:
   # first created -> highest priority.
 
-  root :to => "application#index"
-  match 'search' => 'application#search'
-  match 'find'   => 'application#find'
+  root  :to     => "application#index"
+  match "search" => "application#search"
+  match "login"  => "application#login"
 
-  match '/auth/:provider/callback' => 'authentications#create'
+  match "/auth/:provider/callback" => "users#auth"
   
-  resources :authentications, :only => [:index, :create]
-
   resources :connections do
     member do
       get  :events
@@ -21,15 +21,8 @@ PcaApp::Application.routes.draw do
     end
   end
 
-  resources :certs do
-    member do
-      get :connections
-      get :events
-    end
-  end
-
+  resources :certs
   resources :events
-
   resources :users
 
 end

@@ -1,7 +1,14 @@
+#
+#
+#
+#
+
 class Authentication
   include Mongoid::Document
-  field :user_id, :type => Integer
+
   field :provider, :type => String
   field :uid, :type => String
-  referenced_in :user
+
+  embedded_in :user, :class_name => "User", :inverse_of => :authentication_mechanisms
+
 end
