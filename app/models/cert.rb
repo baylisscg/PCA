@@ -23,7 +23,8 @@ class Cert < Credential
   field :cert # The cert as a pem file.
 
   index :issuer
-
+  
+  validate :time_valid 
   validates_presence_of :subject_dn, :cert_hash
 
   #

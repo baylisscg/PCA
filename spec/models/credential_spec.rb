@@ -2,111 +2,66 @@
 
 require 'spec/spec_helper'
 
-describe Credential do
-  
-  it "allow creation with no dates" do
-    x = Credential.make_unsaved(:no_time)
-    
-    x.should_not be_nil
-    x.should be_valid
-    
-    x.valid_from.should be_nil
-    x.valid_to.should   be_nil
+shared_examples_for "Credential" do
+
+  context "allow creation with no dates" do
+    subject { described_class.make_unsaved(Credential.plan(:no_time)) }
+    it { should_not be_nil }
+    it { should be_valid }
+    its(:valid_from) { should be_nil }
+    its(:valid_to) { should be_nil}
   end
 
-  it "allow creation with no to" do
-    x = Credential.make_unsaved(:from_only)
-    
-    x.should_not be_nil
-    x.should_not be_valid
-    
-    x.valid_from.to_f.should == Time.utc(2011).to_f
-    x.valid_to.should be_nil
+  context "allow creation with no to" do
+    subject { described_class.make_unsaved(Credential.plan(:from_only)) }
+    it { should_not be_nil  }
+    it { should_not be_valid }
+    its(:valid_from) { should == Time.utc(2011) }
+    its(:valid_to) { should be_nil }
   end    
   
-  it "allow creation with no from" do    
-    x = Credential.make_unsaved(:to_only)
-
-    x.should_not be_nil
-    x.should_not be_valid
-    
-    x.valid_to.should == Time.utc(2012)
+  context "allow creation with no from" do    
+    subject { described_class.make_unsaved(Credential.plan(:to_only)) }
+    it { should_not be_nil }
+    it { should_not be_valid }
+    its(:valid_from) { should be_nil }
+    its(:valid_to) { should == Time.utc(2012) }
+   end
+  
+  context "allow creation" do
+    let(:params) { Credential.plan }
+    subject { described_class.make_unsaved(params) }
+    it { should_not be_nil}
+    it { should be_valid }
+    its(:valid_from) { should be_equal_to_time params[:valid_from] }
+    its(:valid_to){ should be_equal_to_time params[:valid_to] }
   end
   
-  it "allow creation" do
-    params = Credential.plan
-    x = Credential.make_unsaved(params) 
-    
-    x.should_not be_nil
-    x.should be_valid
-    
-    x.valid_from.should be_equal_to_time params[:valid_from]
-    x.valid_to.should be_equal_to_time params[:valid_to]
+  context "should stop being valid when valid_to is deleted" do    
+    before{ subject.valid_to = nil }
+    its(:valid_to){ should be_nil }
+    it { should_not be_valid }
+  end
+ 
+  context "should be expired if valid to is in the past" do
+    subject { described_class.make_unsaved(Credential.plan(:to_in_past)) } 
+    it { should be_expired }
+    it { should_not be_valid }
+    its(:valid_to){ should be_less_than_time Time.now }
   end
   
+  context "should be expired if valid from is in the future" do
+    subject {described_class.make_unsaved(Credential.plan(:from_in_future)) } 
+    its(:valid_from){ should be_greater_than_time Time.now }
+    it {should be_expired}
+    it { should_not be_valid }
+  end
 end
 
 #
 #
 #
-shared_examples_for "Credential" do
-  
-  it "should be valid when both dates are set" do    
-    @cred.should_not be_nil
-    @cred.should be_valid
-    
-    @cred.valid_from.should be_equal_to_time @valid_from
-    @cred.valid_to.should be_equal_to_time @valid_to
-  end
-  
-  it "should stop being valid when valid_from is deleted" do    
-    @cred.valid_from = nil
-    @cred.should_not be_valid
-    @cred.valid_from = @valid_from
-    @cred.should be_valid
-  end
-  
- it "should stop being valid when valid_to is deleted" do    
-    @cred.valid_to = nil
-    @cred.should_not be_valid
-    @cred.valid_to = @valid_to
-    @cred.should be_valid
-  end
-  
-  it "should be expired if valid to is in the past" do
-    
-    now = Time.at(Time.now.to_i)
-    in_the_past = now - 10 # 10 seconds ago
-    
-    @cred.valid_to = in_the_past 
-    @cred.should be_expired
-      
-    
-  end
-  
-  it "should be expired if valid from is in the future" do
-    
-    now = Time.at(Time.now.to_i)
-    in_the_future = now + 10 # 10 seconds from now
-    
-    @cred.valid_from = in_the_future
-    @cred.should be_expired
-
-  end
-  
-  
-end
-
 describe Credential do
-  
   it_should_behave_like "Credential"
-  
-  before(:each) do
-    params = Credential.plan
-    @cred =  Credential.make_unsaved(params) 
-    @valid_from = params[:valid_from]
-    @valid_to   =  params[:valid_to]
-  end
-  
 end
 

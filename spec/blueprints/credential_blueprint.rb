@@ -25,4 +25,17 @@ Credential.blueprint(:to_only) do
   valid_to   { Time.utc(2012) }
 end
 
+Credential.blueprint(:to_in_past) do
+  valid_from 
+  valid_to   { Time.utc(2000) }
+end
+
+Credential.blueprint(:from_in_future) do
+  valid_from { Time.utc(2050) }
+  valid_to   
+end
+
+
+
+
 
