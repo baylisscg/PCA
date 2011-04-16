@@ -9,23 +9,41 @@ gem "rake"
 gem "nokogiri"
 gem "omniauth"
 
+gem "delayed_job"
+gem 'delayed_job_mongoid'
+
+if RUBY_PLATFORM =~ /java/ then
+  # Load pure Ruby or JRuby specific libraries
+  gem "mongo"
+  gem "bson"
+  gem "jruby-openssl"
+else
+   # Load libraries with C extensions.
+   gem "mongo_ext"
+   gem "bson_ext"
+end
+
+gem "mongoid", ">=2.0.0.rc.8"
+
+# used by workers
+gem "httpclient"
+
 
 group :production do
-
-  gem "warbler"
-
+  if RUBY_PLATFORM =~ /java/ then
+    gem "warbler"
+  end
 end
 
 # We need rspec-rails here right now
 group :development do
 
   gem "rspec-rails"
-
   gem "yard"
-
   gem "bluecloth" unless RUBY_PLATFORM == 'java'
 
-  if RUBY_PLATFORM == "java"
+  # Select ruby specific test server
+  if RUBY_PLATFORM =~ /java/
     gem "trinidad"
   else
     gem "thin"
@@ -42,21 +60,3 @@ group :test do
   gem 'machinist_mongo', :require => 'machinist/mongoid' # or mongo_mapper
 end
 
-gem "delayed_job"
-gem 'delayed_job_mongoid'
-
-if RUBY_PLATFORM =~ /java/ then
-  # Load pure Ruby or JRuby specific libraries
-  gem "mongo"
-  gem "bson"
-  gem "jruby-openssl"
-else
-   # Load libraries with C extensions.
-   gem "mongo_ext"
-   gem "bson_ext"
-end
-
-gem "mongoid", ">=2.0.0.rc.7"
-
-# used by workers
-gem "httpclient"

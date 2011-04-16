@@ -30,3 +30,9 @@ module PCA
     
   end
 end
+
+RSpec.configure do |config|
+  
+  config.include(PCA::Matchers)
+
+end

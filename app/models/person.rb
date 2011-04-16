@@ -18,10 +18,20 @@ class Person < Entity
   field :first_name
   field :last_name
   field :url
+
+  before_save  :update_name
   
-  after_create :make_name
-  
+  after_create :update_name
+  after_update :update_name
+
+  protected
+
   def make_name
-    self.name = "#{self.first_name} #{self.last_name}" unless self.name
+    "#{self.first_name} #{self.last_name}"
   end
+
+  def update_name
+    self.name = make_name unless self.name
+  end
+
 end

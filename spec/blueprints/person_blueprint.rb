@@ -14,3 +14,10 @@ Person.blueprint do
   url { URI::HTTPS.build( :host=>"user.example.org",:path=>"/#{last_name}_#{first_name}").to_s }
 
 end
+
+Person.blueprint :full do
+  first_name
+  last_name
+  name { "#{first_name} #{last_name}" }
+  url  { URI::HTTPS.build( :host=>"user.example.org",:path=>"/#{last_name}_first_name}").to_s }
+end
