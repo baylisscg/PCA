@@ -4,6 +4,8 @@ require 'spec/spec_helper'
 
 shared_examples_for "Credential" do
 
+  it_should_behave_like "a basic Entity"
+
   context "allow creation with no dates" do
     subject { described_class.make_unsaved(Credential.plan(:no_time)) }
     it { should_not be_nil }

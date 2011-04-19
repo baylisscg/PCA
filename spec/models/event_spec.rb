@@ -2,12 +2,19 @@
 
 require 'spec_helper'
 
+
+shared_examples_for "a basic Event" do
+
+  it_should_behave_like "a basic Entity"
+  it { should be_valid }  
+  it { should respond_to(:created_at) }
+  it { should respond_to(:action) }
+  its(:action){ should be_kind String }
+
+end
+
 describe Event do
  
-  before(:each) do
-    @event = Event.new(:action=>"test")
-  end
-  
   it "should allow creation" do
 
     event = Event.new
@@ -30,11 +37,12 @@ describe Event do
     event = Event.new(:action => "test",:created_at=>time)
     event.should be_valid
   end
- 
-  it "should have timestamps" do
-    @event.should respond_to(:created_at)
-#    @event.should respond_to(:updated_at)
+
+  it_should_behave_like "a basic Event" do
+    subject { Event.make }
   end
-   
+
 end
+
+
 

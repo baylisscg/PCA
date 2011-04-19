@@ -12,6 +12,8 @@ require 'bson'
 #
 class Credential < Entity
 
+  Object_Type = "http://pca.nesc.gla.ac.uk/schema/object/credential"
+
   field "valid_from", :type=> Time
   field "valid_to", :type => Time
  

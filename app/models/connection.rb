@@ -2,9 +2,15 @@
 #
 #
 
-require 'bson'
-require 'pca/time'
+require "bson"
+require "pca/time"
+require "uri"
 
+#
+#
+# Connections abstract out common values from groups of related events.
+#
+#
 class Connection < Entity
   include TimeTools
 
@@ -16,7 +22,15 @@ class Connection < Entity
   belongs_to :credential, :class_name => "Credential", :inverse_of=> :connections
   has_many :events, :class_name => "Event", :inverse_of=>:connection
 
-  validates_presence_of :server, :peer
+  validates_each :server, :peer do |model, attr, value|
+    begin
+      URI.parse(value)
+    rescue URI::InvalidURIError => e
+      model.errors.add "A valid #{attr} is required. (#{e.message})"
+    end
+  end
+
+  validates_associated :credential, :message => "a valid Credential is required"
 
   index [[:server, Mongo::ASCENDING ],[:peer, Mongo::ASCENDING  ],[:_id, Mongo::ASCENDING ]], :unique => true
 
@@ -24,9 +38,6 @@ class Connection < Entity
   named_scope :started_after,  lambda { |after|  {:where => {:created_at.gt => after }}}
   named_scope :started_before, lambda { |before| {:where => {:created_at.lt => before }}}
   named_scope :uses_cert, lambda { |cert| where( :cert_id => cert._id) }
-
-
-  before_save :check_cred
 
   def created_at; self.first_event.created_at end
   def updated_at; self.last_event.created_at end
@@ -50,30 +61,6 @@ class Connection < Entity
       puts "Query = #{query}"
       where(:created_at => query )
     end
-  end
-
-  #
-  #
-  # 
-#  def cert
-#    Cert.criteria.id(self.cert_id).first
-#  end
-
-  #
-  #
-  #
-#  def cert=(cert)
-#    if cert.kind_of? Cert
-#      id = cert._id
-#    else
-#      id = cert
-#      cert = Cert.id(cert)
-#    end
-#    self.cert_id = id
-#  end
-
-  def to_id
-    self.server + " <=> " + self.peer
   end
 
   def self.do_tag_count()
@@ -102,21 +89,5 @@ REDUCE
   end
 
   protected
-
-  #
-  #
-  #
-  def check_cred
-    errors.add(:cert,"Supplied cert id does not exist.") unless self.credential
-  end
-
-  #
-  #
-  #
-  def update_cert
-    cret.connections << self
-    cred.save
-  end
-
 
 end

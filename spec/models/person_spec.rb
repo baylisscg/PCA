@@ -14,6 +14,8 @@ end
 
 describe Person do
 
+  it_should_behave_like "a basic Entity"
+
   context "no #name set" do
 
     let( :user ) { Person.make }
