@@ -2,12 +2,31 @@
 
 require 'spec/spec_helper'
 
-shared_examples_for "Credential" do
+#
+#
+#
+shared_examples_for "a basic Credential" do
 
-  it_should_behave_like "a basic Entity"
+ it_should_behave_like "a basic Entity"
+
+  context "a credential with no user" do
+  end
+
+  context "a credential with no connections" do
+ 
+  end
+
+end
+
+#
+#
+#
+shared_examples_for "a TimedCredential" do
+
+  it_should_behave_like "a basic Credential"
 
   context "allow creation with no dates" do
-    subject { described_class.make_unsaved(Credential.plan(:no_time)) }
+    subject { described_class.make_unsaved(TimedCredential.plan(:no_time)) }
     it { should_not be_nil }
     it { should be_valid }
     its(:valid_from) { should be_nil }
@@ -15,7 +34,7 @@ shared_examples_for "Credential" do
   end
 
   context "allow creation with no to" do
-    subject { described_class.make_unsaved(Credential.plan(:from_only)) }
+    subject { described_class.make_unsaved(TimedCredential.plan(:from_only)) }
     it { should_not be_nil  }
     it { should_not be_valid }
     its(:valid_from) { should == Time.utc(2011) }
@@ -23,7 +42,7 @@ shared_examples_for "Credential" do
   end    
   
   context "allow creation with no from" do    
-    subject { described_class.make_unsaved(Credential.plan(:to_only)) }
+    subject { described_class.make_unsaved(TimedCredential.plan(:to_only)) }
     it { should_not be_nil }
     it { should_not be_valid }
     its(:valid_from) { should be_nil }
@@ -31,7 +50,7 @@ shared_examples_for "Credential" do
    end
   
   context "allow creation" do
-    let(:params) { Credential.plan }
+    let(:params) { TimedCredential.plan }
     subject { described_class.make_unsaved(params) }
     it { should_not be_nil}
     it { should be_valid }
@@ -46,14 +65,14 @@ shared_examples_for "Credential" do
   end
  
   context "should be expired if valid to is in the past" do
-    subject { described_class.make_unsaved(Credential.plan(:to_in_past)) } 
+    subject { described_class.make_unsaved(TimedCredential.plan(:to_in_past)) } 
     it { should be_expired }
     it { should_not be_valid }
     its(:valid_to){ should be_less_than_time Time.now }
   end
   
   context "should be expired if valid from is in the future" do
-    subject {described_class.make_unsaved(Credential.plan(:from_in_future)) } 
+    subject {described_class.make_unsaved(TimedCredential.plan(:from_in_future)) } 
     its(:valid_from){ should be_greater_than_time Time.now }
     it {should be_expired}
     it { should_not be_valid }
@@ -64,6 +83,10 @@ end
 #
 #
 describe Credential do
-  it_should_behave_like "Credential"
+  it_should_behave_like "a basic Credential"
+end
+
+describe TimedCredential do
+  it_should_behave_like "a TimedCredential"
 end
 
