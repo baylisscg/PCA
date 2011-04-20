@@ -83,10 +83,12 @@ end
 #
 #
 describe Credential do
+  subject { Credential.make }
   it_should_behave_like "a basic Credential"
 end
 
 describe TimedCredential do
+  subject { TimedCredential.make }
   it_should_behave_like "a TimedCredential"
 end
 

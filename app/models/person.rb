@@ -3,7 +3,7 @@
 #
 #
 
-require 'bson'
+require "bson"
 
 #
 # The Crednetial class models the basic credential
@@ -19,15 +19,10 @@ class Person < Entity
   field :last_name
   field :url
 
-  before_save  :update_name
-  
-  after_create :update_name
-  after_update :update_name
-
   protected
 
   def make_name
-    "#{self.first_name} #{self.last_name}"
+    self.name = "#{self.first_name} #{self.last_name}" unless self.name
   end
 
   def update_name

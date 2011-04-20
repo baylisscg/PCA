@@ -24,9 +24,13 @@ class Connection < Entity
 
   validates_each :server, :peer do |model, attr, value|
     begin
-      URI.parse(value)
+      if value then
+        URI.parse(value)
+      else
+        model.errors.add attr, "#{attr} must be set."
+      end
     rescue URI::InvalidURIError => e
-      model.errors.add "A valid #{attr} is required. (#{e.message})"
+      model.errors.add attr, "A valid #{attr} is required. #{e}"
     end
   end
 

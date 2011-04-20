@@ -9,11 +9,10 @@ require 'openssl'
 #
 # Extends credential to support X509 public keys.
 #
-class Cert < Credential
+class Cert < TimedCredential
 
   
   Object_Type = "http://pca.nesc.gla.ac.uk/schema/object/cert"
-  def object_type; "http://pca.nesc.gla.ac.uk/schema/object/cert"; end
 
   field :subject_dn, :index => true, :background => true
   field :cert_hash   # The hash of the certificate
@@ -22,11 +21,8 @@ class Cert < Credential
   referenced_in   :issuer, :class_name => "Cert", :inverse_of=> :signed
   references_many :signed, :class_name => "Cert", :inverse_of=> :issuer, :foreign_key => :issuer_id, :validate => false # Only automatically validate  up the hierarchy to avoid infinite loops 
 
-  field :cert # The cert as a pem file.
-
   index :issuer
-  
-  validate :time_valid 
+ 
   validates_presence_of :subject_dn, :cert_hash
 
   #
@@ -110,17 +106,6 @@ class Cert < Credential
 
     return cert
   end
-
-#  def issuer_chain
-#    Enumerator.new do |x|
-#      temp = self.issuer
-#      x.yield temp if temp
-#      while not temp.self_signed? do
-#        temp = temp.issuer
-#        x.yield temp if temp
-#      end
-#    end
-#  end
 
   def self_signed?
     self.issuer and self.issuer == self

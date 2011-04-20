@@ -9,7 +9,7 @@ shared_examples_for "a basic Event" do
   it { should be_valid }  
   it { should respond_to(:created_at) }
   it { should respond_to(:action) }
-  its(:action){ should be_kind String }
+  its(:action){ should be_a_kind_of String }
 
 end
 

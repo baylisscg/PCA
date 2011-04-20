@@ -29,7 +29,11 @@ end
 
 describe Cert do
   
-  it_should_behave_like "a TimedCredential"
+
+
+  it_should_behave_like "a TimedCredential" do
+    subject { Cert.make }
+  end
 
   before(:all) do
     @args = Cert.plan
