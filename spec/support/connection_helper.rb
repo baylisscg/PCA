@@ -2,7 +2,7 @@
 #
 #
 
-require 'pca/event_generator'
+require "pca/event_generator"
 
 #
 # 
@@ -17,16 +17,14 @@ def make_connection(args={})
   end
 
   user = args[:user] || User.make_unsaved
-  cred = args[:cert] || Cert.make_unsaved 
+  credential = args[:cert] || Cert.make_unsaved 
   start_time = args[:start_time] || (Time.now - 3628800)
   end_time   = args[:end_time] || Time.now
 
   event_generatror = Digraph[:test]
 
-  
-  
   connection = Connection.make
-  connection.cred = cred
+  connection.credential = credential
   current_start = start_time
   picked_end    = pick_start( start_time, end_time)
         
