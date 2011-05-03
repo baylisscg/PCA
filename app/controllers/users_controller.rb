@@ -2,10 +2,7 @@
 #
 #
 
-class UsersController < ActionController::Base
-  protect_from_forgery
-
-  layout "html5.html"
+class UsersController < ApplicationController
 
   #
   #

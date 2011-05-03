@@ -6,11 +6,7 @@
 
 class CertsController < ApplicationController
 
-  layout "html5"
 
-#  respond_to :html, :only => :index
- # respond_to :xhtml, :html, :xml, :json, :atom
-  
   caches_action :index, :show
 
   def index

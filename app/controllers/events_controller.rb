@@ -1,8 +1,6 @@
 =begin
 =end
 
-#require 'bunny'
-
 class EventsController < ApplicationController
 
   layout "html5.html"

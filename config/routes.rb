@@ -7,9 +7,9 @@ PcaApp::Application.routes.draw do
   # The priority is based upon order of creation:
   # first created -> highest priority.
 
-  root  :to     => "application#index"
-  match "search" => "application#search"
-  match "login"  => "application#login"
+  root  :to      => "main#index"
+  match "search" => "main#search"
+  match "login"  => "main#login"
 
   match "/auth/:provider/callback" => "users#auth"
   
