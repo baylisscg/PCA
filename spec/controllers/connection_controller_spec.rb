@@ -1,72 +1,119 @@
-require 'spec_helper'
+#
+#
+#
+
+require "spec_helper"
 
 describe ConnectionsController do
   
-  def create_setup
-    Connection.should_receive(:new).with(@params).and_return(@conn)
-    @conn.should_receive(:save).with().and_return()
+  #
+  #
+  #
+  describe "GET index" do
+    
+    shared_examples_for "a basic GET connection index result" do
+      it { should be_success }
+      it { should render_template("index") }
+      it_should_behave_like "a valid HTML valid response"
+    end
+
+    shared_examples_for "a basic typed GET" do |path,type,template|
+      before(:each) do
+         @request.env["HTTP_ACCEPT"] = type
+      end
+      subject { get path }
+      it { should be_success }
+      it { should render_template(template) }
+      its(:charset){ should == "utf-8" }
+      its(:content_type){ should eq(type)}
+    end
+    
+
+    context "with no existing conenctions" do
+      let(:params) { Connection.plan }
+      let(:conn) { mock_model(Connection, params) }
+      
+      before do
+        Connection.should_receive(:paginate).and_return []
+      end
+
+      subject { get "index" }
+      it_should_behave_like "a basic GET connection index result"
+    end
+
+    context "with existing connections" do
+
+      let(:params) { Connection.plan }
+      let(:conn) { mock_model(Connection, params) }
+
+      before do
+        Connection.should_receive(:paginate).and_return 5.times.map {|n| Connection.make }
+      end
+
+      context "render HTML" do
+        it_should_behave_like  "a basic typed GET", "index", Mime::HTML, "index"
+      end
+      context "render ATOM" do
+        it_should_behave_like  "a basic typed GET", "index", Mime::ATOM,  "index"
+      end
+      context "render JSON" do
+        it_should_behave_like  "a basic typed GET", "index", Mime::JSON, ""
+      end
+    end
+
   end
 
-  before(:each) do
-    @params = {:server => "server.example.org",
-               :peer   => "client.example.org"}
-    @conn = mock_model(Connection,
-                       @params)
+  #
+  #
+  # 
+  describe "POST a new connection" do
+
+
+    before do
+      Connection.should_receive(:new).with(params).and_return(conn)
+      conn.should_receive(:save).with().and_return()
+      conn.stub(:_id)
+    end
+
+    context "when no identical connection exists" do
+
+      let(:params) { Connection.plan }
+      let(:conn) { mock_model(Connection, params) }
+
+      subject{ post :create, params }
+
+      it { should be_redirect }
+      its(:content_type){should eq(Mime::HTML) }
+      its(:location){ should == connection_url(conn) } # Redirect to correct URL
+    end
   end
+
+  #
+  #
+  #
+  #  it "should allow creating with JSON return" do
+  #    create_setup
+  #    @request.env["HTTP_ACCEPT"] = Mime::JSON
+  #    post :create, @params
+  #    response.should be_success
+  #    response.content_type.should == Mime::JSON
+  #  end
   
   #
   #
   #
-  it "should render index" do
+  #   it "should allow creating with XML return" do
+  #     create_setup
+  #     @request.env["HTTP_ACCEPT"] = Mime::XML
 
-    get "index"
-    response.should be_success
-    response.charset.should == "utf-8"
-    response.content_type.should == Mime::HTML
-
-    response.should render_template("index")
-
-  end
-
-  #
-  #
-  #
-  it "should allow creating new connections" do
-    create_setup
-
-    post :create, @params
-
-    response.should be_redirect
-    response.content_type.should == Mime::HTML
-    response.location.should == connection_url(@conn) # Redirect to correct URL
-  end
-
-  #
-  #
-  #
-#  it "should allow creating with JSON return" do
-#    create_setup
-#    @request.env["HTTP_ACCEPT"] = Mime::JSON
-#    post :create, @params
-#    response.should be_success
-#    response.content_type.should == Mime::JSON
-#  end
+  #     @conn.should_receive(:to_xml)
   
-  #
-  #
-  #
-#   it "should allow creating with XML return" do
-#     create_setup
-#     @request.env["HTTP_ACCEPT"] = Mime::XML
-
-#     @conn.should_receive(:to_xml)
-
-#     post :create, @params
-#     response.should be_success
-#     response.content_type.should == Mime::XML
-# #    response.should render_template("create")
-#   end
-
+  #     post :create, @params
+  #     response.should be_success
+  #     response.content_type.should == Mime::XML
+  # #    response.should render_template("create")
+  #   end
+  
   #
   #
   #
@@ -80,17 +127,13 @@ describe ConnectionsController do
   #   response.should render_template("errors/500")
 
   # end
-  
-end
 
-#
-#
-#
+end
+  
 describe  ConnectionsController, "adding to a connection" do
 
   before(:each) do
-    @params = {:server=>"server.example.org",
-      :peer=>"client.example.org"}
+    @params = Connection.plan
     @conn = mock_model(Connection,
                        @params)
   end
@@ -100,14 +143,9 @@ describe  ConnectionsController, "adding to a connection" do
   #
   it "add cert" do
     
-    attribs = Credential.plan
-    # { :subject_dn=>"test db",
-    #  :issuer_chain=>["test ca"],
-    #  :valid_from=>Time.now.utc,
-    #  :valid_to=>Time.now.utc,
-    #  :cert_hash=>"f0ad7e27"}
-    
+    attribs = Credential.plan    
     cert =  mock_model(Credential, attribs)
+
     cert.should_receive(:upcert)
     
     @conn.should_receive(:cred_id=).with(cert.id)
@@ -126,7 +164,6 @@ describe  ConnectionsController, "adding to a connection" do
     response.content_type.should == Mime::HTML
 
   end
-
 
   describe ConnectionsController, "adding an event" do
 

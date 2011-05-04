@@ -5,10 +5,6 @@ require "bson"
 
 class ConnectionsController < ActionController::Base
 
-  protect_from_forgery
-
-  layout "html5.html"
-
   rescue_from BSON::InvalidObjectId, :with =>:invalid_conn_id
 
   #
@@ -16,25 +12,20 @@ class ConnectionsController < ActionController::Base
   #
   def index
 
-    page = {:page => 1 || params[:page].to_i,
-            :per_page => 200}
-
-    threshold = get_int(:max) if params[:max]
-
+    @page = 1 || params[:page].to_i
+    per_page = 20 || params[:per_page].to_i
+    #threshold = get_int(:max) if params[:max]
     sort = get_sort
 
     # Build the query
-    query = Connection.criteria
-    query = query.event_within(threshold) if threshold
-    query = query.order_by(get_sort) if sort
+    #query = {}
+    #puts "Query = #{query.class}"
+    #query = query.event_within(threshold) if threshold
 
-    @conns = if page then query.paginate(page) else query.all end
-
-    x = @conns.first
-#    puts "#{x} -> \"#{x.cert}\" -> \"#{Cert.where(:connection_ids=>x._id).first}\" "
+    @conns = Connection.paginate(:page=>@page, :per_page=>per_page,:sort=>sort)
 
     respond_to do |format|
-     format.html # index.html.erb
+      format.html # index.html.erb
       format.atom { render( :layout => nil) }
       format.json { render :json => @events }
       format.xml  { render :xml => @events }
