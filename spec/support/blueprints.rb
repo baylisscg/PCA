@@ -1,8 +1,20 @@
+#
+#
+#
+#
 require 'machinist/mongoid'
 require 'sham'
 require 'faker'
 
-Dir["#{Rails.root}/spec/blueprints/**/*_blueprint.rb"].each do |f| 
-  require f
-end
+# Load the blueprints
+require "spec/blueprints"
 
+module SpecHelpers
+ module Application
+   extend ActiveSupport::Concern
+   included do
+     let!(:params) { Connection.plan }
+     let!(:conn) { Connection.make(params) }
+   end
+ end
+end

@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-require 'rubygems'
-require 'rspec'
 require 'spec_helper'
 
 describe Connection do

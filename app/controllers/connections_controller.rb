@@ -3,7 +3,7 @@
 
 require "bson"
 
-class ConnectionsController < ActionController::Base
+class ConnectionsController < ApplicationController
 
   rescue_from BSON::InvalidObjectId, :with =>:invalid_conn_id
 
@@ -51,11 +51,15 @@ class ConnectionsController < ActionController::Base
   #
   #
   def create
+    
+    conn_params = {
+      :server => params[:server],
+      :peer => params[:peer],
+      :credential => params[:credential] }
 
-    server = params[:server]
-    peer = params[:peer]
+    puts "Conn params #{params}"
 
-    @connection = Connection.new({:server=>server,:peer=>peer})
+    @connection = Connection.new(conn_params)
 
     Rails.logger.info {"@connection = #{@connection._id}"}
 

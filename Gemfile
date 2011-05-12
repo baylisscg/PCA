@@ -2,6 +2,11 @@
 #
 source :rubygems
 
+  gem "faker"
+  gem "machinist"
+  gem 'machinist_mongo', :require => 'machinist/mongoid' # or machinist/mongo_mapper
+
+
 # This is a Rails 3 app
 gem "rails", ">=3.0.0"
 
@@ -38,7 +43,7 @@ end
 # We need rspec-rails here right now
 group :development do
 
-  gem "rspec-rails"
+  gem "rspec-rails", "~> 2.6.0.rc4"
   gem "yard"
   gem "bluecloth" unless RUBY_PLATFORM == 'java'
 
@@ -53,10 +58,11 @@ end
 
 group :test do
   gem "html5"
-  gem "rspec-rails" # rspec-rails isn't needed here but my be later.
+  gem "rspec-rails", "~> 2.6.0.rc4" # rspec-rails isn't needed here but my be later.
+#  gem "shoulda-matchers"
   gem "webrat"
-  gem "faker"
-  gem "machinist"
-  gem 'machinist_mongo', :require => 'machinist/mongoid' # or mongo_mapper
+#  gem "faker"
+#  gem "machinist"
+#  gem 'machinist_mongo', :require => 'machinist/mongoid' # or machinist/mongo_mapper
 end
 

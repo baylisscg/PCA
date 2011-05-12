@@ -1,5 +1,7 @@
-require 'rubygems'
-require 'rspec'
+#
+#
+#
+
 require 'spec_helper'
 
 #describe Dn do

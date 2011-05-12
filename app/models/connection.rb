@@ -27,8 +27,8 @@ class Connection < Entity
       if value then
         URI.parse(value)
       else
-        model.errors.add attr, "#{attr} must be set."
-      end
+       model.errors.add attr, "#{attr} must be set."
+     end
     rescue URI::InvalidURIError => e
       model.errors.add attr, "A valid #{attr} is required. #{e}"
     end
@@ -91,7 +91,5 @@ REDUCE
 
     return result
   end
-
-  protected
 
 end
