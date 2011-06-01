@@ -52,12 +52,10 @@ class ConnectionsController < ApplicationController
   #
   def create
     
-    conn_params = {
-      :server => params[:server],
-      :peer => params[:peer],
-      :credential => params[:credential] }
-
-    puts "Conn params #{params}"
+    conn_params = {}
+    conn_params[:server] = params[:server] if params[:server] 
+    conn_params[:peer]   = params[:peer]   if params[:peer]
+    conn_params[:credential] = params[:credential] if params[:credential] 
 
     @connection = Connection.new(conn_params)
 
@@ -94,7 +92,7 @@ class ConnectionsController < ApplicationController
     # if we don't have all the parameters we need raise an error
     elements.each do  |elem|
       if !params.has_key?(elem) then
-        render "/500.html", :status=> 500
+        render "errors/500.html", :status=> 500
         return
       end
     end
@@ -109,9 +107,9 @@ class ConnectionsController < ApplicationController
     if cert.valid? then
 
       # save the cred and update the connection
-      cert.upcert
+      cert.save
       @conn.cred_id = cert._id
-      @conn.upcert
+      @conn.save
 
       respond_to do |format|
         format.html { redirect_to @conn }
@@ -127,11 +125,15 @@ class ConnectionsController < ApplicationController
   #
   def add_event
 
-    @event = Event.new(params[:post])
+    raise "No event passed params = #{params}" unless params[:event]
+
+    @event = Event.new(params[:event].symbolize_keys)
 
     @conn = Connection.criteria.for_ids(params[:id]).first
+    raise "Invalid id" unless @conn
+ 
     @conn.events << @event
-    @conn.upcert
+    @conn.save
 
     respond_to do |format|
       format.html { redirect_to @conn }

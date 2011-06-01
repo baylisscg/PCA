@@ -36,65 +36,77 @@ describe ConnectionsController do
   # 
   describe "POST a new connection" do
     
-    let!(:params) { Connection.plan }
+    let!(:params) { x = Connection.plan; x.delete(:credential); x }
     let!(:conn) { Connection.make(params) }
 
-    context "when no identical connection exists" do
+    subject{ post :create, params }
 
+    context "when no identical connection exists" do
+      context "when passed a valid connection" do
       before(:each) do
-        Connection.should_receive(:new).with(params).and_return(conn)
-        conn.should_receive(:save).and_return()
-        conn.stub(:_id)
+         Connection.should_receive(:new).with(params).and_return(conn)
+         conn.should_receive(:save).and_return()
+        end
+
+        it { should be_redirect }
+        its(:content_type){should eq(Mime::HTML) }
+        its(:location){ should == connection_url(conn) } # Redirect to correct URL
       end
 
-      subject{ post :create, params }
+      context "when passed an invalid connection" do
+        # Redefine params and conn 
+        let!(:params) { x = Connection.plan; x.delete :server; x}
+        let!(:conn) { Connection.make(params) }
+
+        before(:each) do
+          Connection.should_receive(:new).with(params).and_return(conn)
+          conn.should_receive(:save).and_return()
+          #conn.stub(:_id)
+        end
+
+        it { should be_redirect }
+        its(:content_type){should eq(Mime::HTML) }
+        its(:location){ should == connection_url(conn) } # Redirect to correct URL
+        
+      end
+    end
+    
+  end
+
+  
+  describe "Add events to a connection" do
+
+    let!(:event_params) { Event.plan }
+    let!(:event) { Event.make_unsaved event_params }
+    let!(:conn_params) { x = Connection.plan; x }
+    let!(:conn)  { Connection.make_unsaved conn_params  }
+    let(:params) do
+      {:event => event_params,
+        :id => conn._id.to_s}
+    end
+
+    subject { post(:add_event, params) } 
+
+    before(:each) do
+      Event.should_receive(:new).with(event_params).and_return(event)
+      Connection.stub_chain(:criteria,:for_ids,:first).and_return(conn)
+
+      temp = double()
+      conn.should_receive(:events).and_return(temp)
+      temp.should_receive(:<<).with(event)
+      conn.should_receive(:save)
+    end
+
+
+    #
+    #
+    #
+    context "add event" do
       it { should be_redirect }
-      its(:content_type){should eq(Mime::HTML) }
-      its(:location){ should == connection_url(conn) } # Redirect to correct URL
-      
+      its(:location){ should == connections_url } #(conn._id) }
     end
   end
 
-  #
-  #
-  #
-  #  it "should allow creating with JSON return" do
-  #    create_setup
-  #    @request.env["HTTP_ACCEPT"] = Mime::JSON
-  #    post :create, @params
-  #    response.should be_success
-  #    response.content_type.should == Mime::JSON
-  #  end
-  
-  #
-  #
-  #
-  #   it "should allow creating with XML return" do
-  #     create_setup
-  #     @request.env["HTTP_ACCEPT"] = Mime::XML
-
-  #     @conn.should_receive(:to_xml)
-  
-  #     post :create, @params
-  #     response.should be_success
-  #     response.content_type.should == Mime::XML
-  # #    response.should render_template("create")
-  #   end
-  
-  #
-  #
-  #
-  # it "should not allow creating new connections without sufficient arguments" do
-  
-  #   post :create, {:peer=>"client.example.org"}
-  
-  #   response.status.should == 500
-  #   response.charset.should == "utf-8"
-  #   response.content_type.should == Mime::HTML
-  #   response.should render_template("errors/500")
-
-  # end
-  
   describe "adding to a connection" do
 
     before(:each) do
@@ -111,10 +123,10 @@ describe ConnectionsController do
       attribs = Credential.plan    
       cert =  mock_model(Credential, attribs)
 
-      cert.should_receive(:upcert)
+      cert.should_receive(:save)
       
       @conn.should_receive(:cred_id=).with(cert.id)
-      @conn.should_receive(:upcert)
+      @conn.should_receive(:save)
       
       Cert.should_receive(:new).and_return(cert)
       Connection.should_receive(:find).with(@conn.id).and_return(@conn)
@@ -146,7 +158,7 @@ describe ConnectionsController do
       #
       #
       it "should not allow adding an event with a bad connection id" do
-        post :add_event, :id=>"not an id", :post=>@attribs
+        post :add_event, :id=>"not an id", :post=>@attribs, :event=>{}
         response.should_not be_success
         response.charset.should == "utf-8"
         response.content_type.should == Mime::HTML
@@ -154,19 +166,19 @@ describe ConnectionsController do
       
       it "add a valid event" do
         
-        attribs = {"action"=>"Test Action"}
+        attribs = Event.plan #{action=>"Test Action"}
         
         events = mock
         @conn.should_receive(:events).and_return(events)
         events.should_receive(:<<).with(@event)
-        @conn.should_receive(:upcert)
+        @conn.should_receive(:save)
 
         Connection.should_receive(:find).with(@conn.id).and_return(@conn)
-        Event.should_receive(:new).with(@event_attribs).and_return(@event)
+        Event.should_receive(:new).with(attribs).and_return(@event)
         
         @conn.id
 
-        post :add_event, :id=> @conn.id, :post=>attribs
+        post :add_event, {:id=> @conn.id, :event=>attribs}
 
         assert_response :found
         

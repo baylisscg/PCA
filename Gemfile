@@ -6,11 +6,10 @@ source :rubygems
   gem "machinist"
   gem 'machinist_mongo', :require => 'machinist/mongoid' # or machinist/mongo_mapper
 
-
 # This is a Rails 3 app
 gem "rails", ">=3.0.0"
 
-gem "rake"
+gem "rake", "~> 0.8.7"
 gem "nokogiri"
 gem "omniauth"
 
