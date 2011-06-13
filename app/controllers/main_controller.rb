@@ -1,3 +1,4 @@
+# -*- coding: undecided -*-
 #
 #
 #
@@ -15,7 +16,7 @@ class MainController < ApplicationController
   def index
 
     @page = 1 || params[:page]
-    @connections = Connection.order_by([:updated_at,:desc]).paginate({ :page=>@page, :per_page=>10 })
+    @connections = Connection.page(@page)
     @pages = Connection.count 
     
     respond_to do |format|

@@ -5,6 +5,8 @@ class EventsController < ApplicationController
 
   layout "html5.html"
 
+  respond_to :html, :json
+
   def find_cert
     return Cert.criteria.id( BSON::ObjectID.from_string(params[:cert_id])).first
   end
@@ -18,13 +20,8 @@ class EventsController < ApplicationController
 
   
   def index
-    @types = Connection.do_tag_count.find # Event.only(:action).aggregate
-#    puts "Got #{@types} events"
-    respond_to do |format|
-      format.html { render :index }
-      format.json { render :json }
-      format.xml { render :xml => @events }
-    end
+    @types = Event.only(:action).aggregate
+    respond_with @types
   end
     
   def get_event

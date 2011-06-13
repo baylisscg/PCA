@@ -28,10 +28,10 @@ else
 end
 
 gem "mongoid", ">=2.0.0.rc.8"
+gem "kaminari" #Pager
 
 # used by workers
 gem "httpclient"
-
 
 group :production do
   if RUBY_PLATFORM =~ /java/ then

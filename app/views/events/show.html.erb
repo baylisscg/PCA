@@ -8,9 +8,11 @@
     <tr>
       <td>Connection</td><td><%= link_to "connection", @event.connection %></td>
     </tr>
+    <% if @event.connection.credential %>
     <tr>      
-      <td>Cert</td><td><%= link_to "cert", @event.connection.cred %></td><td><%=  @event.connection.cred.class %></td>
+      <td>Cert</td><td><%= link_to "cert", @event.connection.credential %></td><td><%=  @event.connection.credential.name %></td>
     </tr>
+    <% end %>
     <tr>
       <td>Action</td>
       <td><%= @event.action %></td>

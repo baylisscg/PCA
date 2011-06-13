@@ -16,12 +16,13 @@ PcaApp::Application.routes.draw do
   resources :connections do
     member do
       get  :events
-      post :add_cert
+      post :add_cred
       post :add_event
     end
   end
 
   resources :certs
+  resources :credentials
   resources :events
   resources :users
 

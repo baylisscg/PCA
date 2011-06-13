@@ -2,122 +2,63 @@
 =end
 
 require "bson"
+require "pp"
 
 class ConnectionsController < ApplicationController
 
   rescue_from BSON::InvalidObjectId, :with =>:invalid_conn_id
 
-  #
+  respond_to :html, :json, :xml, :atom
+
   #
   #
   def index
-
     @page = 1 || params[:page].to_i
-    per_page = 20 || params[:per_page].to_i
-    #threshold = get_int(:max) if params[:max]
-    sort = get_sort
-
-    # Build the query
-    #query = {}
-    #puts "Query = #{query.class}"
-    #query = query.event_within(threshold) if threshold
-
-    @conns = Connection.paginate(:page=>@page, :per_page=>per_page,:sort=>sort)
-
-    respond_to do |format|
-      format.html # index.html.erb
-      format.atom { render( :layout => nil) }
-      format.json { render :json => @events }
-      format.xml  { render :xml => @events }
-    end
+    respond_with( @conns= Connection.order_by(get_sort).page(@page) )
   end
 
   #
   #
   #
-  def show
-
-#    @conn = Connection.find(params[:id])
+  def show    
+    id = BSON::ObjectId.from_string(params["id"])
     @conn = Connection.criteria.for_ids(id).first
-
-    respond_to do |format|
-      format.html # index.html.erb
-      format.atom { render( :layout => nil) }
-      format.json { render( :layout => nil) }
-    end
+    respond_with @conn, :location=>connection_url(@conn)
   end
 
   #
   #
   #
   def create
-    
     conn_params = {}
     conn_params[:server] = params[:server] if params[:server] 
     conn_params[:peer]   = params[:peer]   if params[:peer]
     conn_params[:credential] = params[:credential] if params[:credential] 
-
-    @connection = Connection.new(conn_params)
-
-    Rails.logger.info {"@connection = #{@connection._id}"}
-
-    if @connection.valid? then
-
-      Rails.logger.info { "Creating new connection #{@connection._id}" }
-
-      @connection.save
-
-      respond_to do |format|
-        format.html { redirect_to @connection }
-        format.atom { render( :layout => nil) }
-        format.json { render :json => @connection, :layout => nil }
-        format.xml  { render :xml => @connection,
-                             :layout => nil,
-                             :template=>"connections/show" }
-      end
-    else
-      render "errors/500.html", :layout=>"html5.html", :status=> 500
-    end
+    conn = Connection.create(conn_params)
+    respond_with conn
   end
 
   #
   #
   #
-  def add_cert
-
-    @conn = Connection.criteria.for_ids(params[:id])
-
-    elements = [:subject_dn, :issuer_chain,:valid_from,:valid_to]
-
-    # if we don't have all the parameters we need raise an error
-    elements.each do  |elem|
-      if !params.has_key?(elem) then
-        render "errors/500.html", :status=> 500
-        return
-      end
-    end
-
-    cert_param = {}
-    elements.each do |elem|
-      cert_param[elem] = params[elem]
-    end
-
-    cert = Cert.new(cert_param)
-
-    if cert.valid? then
-
-      # save the cred and update the connection
-      cert.save
-      @conn.cred_id = cert._id
-      @conn.save
-
-      respond_to do |format|
-        format.html { redirect_to @conn }
-        format.json { render :json => cert }
-        format.xml  { render :xml => cert }
-      end
-    else render "/500.html", :status=> 500 end
-
+  def add_cred
+    # Find the ID of the connection 
+    @conn = Connection.criteria.for_ids(BSON::ObjectId.from_string(params["id"])).first
+    
+    #Create or find credential
+    cred_params = params["credential"]
+    @cred = case cred_params["type"]
+            when "X509"
+              # Pass the X.509 cert
+              Cert.from_cert cred_params
+            else
+              # Whatever is in the credential
+              Credential.find_or_create cred_params
+            end
+    @conn.credential = @cred
+    @cred.save
+    @conn.save
+    respond_with @cred
   end
 
   #
@@ -126,20 +67,16 @@ class ConnectionsController < ApplicationController
   def add_event
 
     raise "No event passed params = #{params}" unless params[:event]
-
+    id = BSON::ObjectId.from_string(params["id"])
     @event = Event.new(params[:event].symbolize_keys)
 
-    @conn = Connection.criteria.for_ids(params[:id]).first
-    raise "Invalid id" unless @conn
- 
+    @conn = Connection.criteria.for_ids([id]).first
+    raise BSON::InvalidObjectId unless @conn
+    # @event.connection = @conn
     @conn.events << @event
     @conn.save
-
-    respond_to do |format|
-      format.html { redirect_to @conn }
-      format.json { render :json => result }
-      format.xml  { render :xml => result }
-    end
+    @event.save
+    respond_with @event
   end
 
   def events

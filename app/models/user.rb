@@ -15,7 +15,7 @@ class User < Person
 
   embeds_many :authentication_mechanisms
 
-  index ["authentication_mechanisms.provider","authentication_mechanisms.uid"], :unique => true
+  index [["authentication_mechanisms.provider",Mongo::ASCENDING],["authentication_mechanisms.uid",Mongo::ASCENDING]]
 
   #
   #

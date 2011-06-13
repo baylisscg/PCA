@@ -41,12 +41,22 @@ class Entity
     raise NotImplementedError, "Entity#to_yaml called. This does not make sense."
   end
 
+  def as_json(options={})
+    hash = { :tag=>self.tag,
+      :name=>self.name,
+      :object_type=>self.object_type,
+    }
+    hash[:summary] = self.summary if self.summary
+    hash
+  end
+
+
   protected
   #
   # 
   #
   def make_tag
-    self.tag = "tag:#{Entity::TAG_BASE}:#{self.class.name}/#{self.name}/#{self._id.to_s}" unless self.tag
+    self.tag = "tag:#{Entity::TAG_BASE}:#{self.name}/#{self._id.to_s}" unless self.tag
   end
 
   def make_name
@@ -56,6 +66,5 @@ class Entity
   def make_object_type
     self.object_type = self.class::Object_Type unless self.object_type
   end
-
 
 end

@@ -20,6 +20,13 @@ class TimedCredential < Credential
   # As we cannot save invalid certificates to only sanity check the dates.
   validate :time_valid
 
+  def as_json(options={})
+    hash = super(options)
+    hash[:valid_from] = self.valid_from if self.valid_from
+    hash[:valid_to] = self.valid_to if self.valid_to
+    return hash
+  end
+
   #
   # Time is valid if either both valid_from and valid_to are nil or
   # both are set and valid_from is before valid_to. 

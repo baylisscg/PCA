@@ -5,6 +5,8 @@ require 'uri'
 require 'cgi'
 require 'digest/sha1'
 require 'openssl'
+require 'base64'
+require 'pp'
 
 #
 # Extends credential to support X509 public keys.
@@ -12,23 +14,51 @@ require 'openssl'
 class Cert < TimedCredential
 
   
-  Object_Type = "http://pca.nesc.gla.ac.uk/schema/object/cert"
+  Object_Type = "http://pca.nesc.gla.ac.uk/schema/object/x509"
 
   field :subject_dn, :index => true, :background => true
   field :cert_hash   # The hash of the certificate
   field :proxy,      :type=>Boolean, :default=>false # True if a RFC proxy
+  field :key 
   
   referenced_in   :issuer, :class_name => "Cert", :inverse_of=> :signed
   references_many :signed, :class_name => "Cert", :inverse_of=> :issuer, :foreign_key => :issuer_id, :validate => false # Only automatically validate  up the hierarchy to avoid infinite loops 
 
   index :issuer
  
-  validates_presence_of :subject_dn, :cert_hash
+  validates_presence_of :subject_dn, :message=>"You must supply a Subject DN"
+  validates_presence_of :cert_hash, :message=>"You must supply a certificate hash."
+
+  def as_json(options={})
+    hash = super(options)
+    hash[:subject_dn] = self.subject_dn
+    hash[:cert_hash] = self.cert_hash if self.cert_hash
+    hash[:issuer] = self.issuer if self.issuer
+    hash[:key]    = self.key
+    return hash
+  end
+  
+  def self.recursive(x,xs)
+    y,*ys = xs
+    x509 = OpenSSL::X509::Certificate.new(Base64.decode64(x))
+    attribs = {:subject_dn=>x509.subject.to_s}
+    attribs[:valid_from] = x509.not_before 
+    attribs[:valid_to] = x509.not_after
+    attribs[:issuer] = Cert.recursive(y,ys)._id unless ys.empty?
+    attribs[:key] = Base64.encode64 x509.public_key.to_der
+    attribs[:cert_hash] = "SHA256:" << Digest::SHA256.hexdigest(x509.public_key.to_der)
+    pp attribs
+    return Cert.find_or_create_by( attribs )
+  end
+
+  def self.from_cert(args)
+    Cert.recursive args["cert"],args["issuer"]
+  end
 
   #
   #
   #
-  def to_sa
+  def to_s
     out = "subject: #{self.subject_dn}"
     out << "\n" << "issuer: " << self.issuer.subject_dn if self.issuer
 #    out << "\n" << "issuer_chain: " << self.issuer_chain.map {|cert| cert.subject_dn }.join(", ") if self.issuer_chain
@@ -111,7 +141,7 @@ class Cert < TimedCredential
     self.issuer and self.issuer == self
   end
 
-  def Cert.calc_sha( cert )
+  def self.calc_sha( cert )
     hash = Digest::SHA256.new
     hash << cert.subject_dn if cert.subject_dn
     hash << cert.valid_from.iso8601 if cert.valid_from
@@ -123,7 +153,7 @@ class Cert < TimedCredential
   #
   #
   def ==(other)
-    return false unless other.is_a?(Cert)
+    return false unless other.is_a?(X509)
     return false unless self.valid? == other.valid?
     return self._id == other._id
     # return self.sha == other.sha

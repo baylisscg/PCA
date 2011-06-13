@@ -5,7 +5,7 @@ Event activity summary.
   <tr><th>Action</th><th>Occurs</th></tr>
   <% @types.each do |type| %>
     <tr>
-      <td><%= type["_id"] %></td><td><%= type["value"]["count"].to_i %></td>
+      <td><%= type["action"] %></td><td><%= type["count"].to_i %></td>
     </tr>
   <% end %>
 </table>

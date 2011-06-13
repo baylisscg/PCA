@@ -20,9 +20,16 @@ class Credential < Entity
   #
   #
   #
-  def self.find_or_initialize(args)
-    {"x509" => Cert }[args["type"]].find_or_initialize_by(args)
-  end
+#  def self.find_or_initialize(args)
+#    {"x509" => Cert }[args["type"]].find_or_initialize_by(args)
+#  end
   
+  def as_json(options={})
+    hash = super(options)
+    hash[:user] = self.user if self.user
+    hash[:connections] = self.connections.all if self.connections
+    return hash
+  end
+
 end
 

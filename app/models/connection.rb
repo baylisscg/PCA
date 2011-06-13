@@ -14,7 +14,9 @@ require "uri"
 class Connection < Entity
   include TimeTools
 
-  Object_Type = "http://pca.nesc.gla.ac.uk/schema/object/connect"
+  include  Rails.application.routes.url_helpers
+
+  Object_Type = "http://pca.nesc.gla.ac.uk/schema/objects/connect"
 
   field :server
   field :peer
@@ -34,7 +36,7 @@ class Connection < Entity
     end
   end
 
-  validates_associated :credential, :message => "a valid Credential is required"
+#  validates_associated :credential, :message => "a valid Credential is required. #{credential.errors}"
 
   index [[:server, Mongo::ASCENDING ],[:peer, Mongo::ASCENDING  ],[:_id, Mongo::ASCENDING ]], :unique => true
 
@@ -52,6 +54,17 @@ class Connection < Entity
 
   def first_event
     self.events.descending(:created_at).first
+  end
+
+  def as_json(options={})
+    host = "localhost" ||  options[:host]
+    port = 3000 || options[:port]
+    base = super(options)
+    base[:server] = self.server
+    base[:peer] = self.peer
+    base[:credential] = credential_path(self.credential) if self.credential
+    base[:events] = self.events.ascending(:created_at).map { |event| event_path(event) } if self.events and not self.events.empty?
+    base
   end
 
   def self.within(args)
