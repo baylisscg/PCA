@@ -49,11 +49,11 @@ class Connection < Entity
   def updated_at; self.last_event.created_at end
 
   def last_event
-    self.events.ascending(:created_at).first
+    self.events.descending(:created_at).first
   end
 
   def first_event
-    self.events.descending(:created_at).first
+    self.events.ascending(:created_at).first
   end
 
   def as_json(options={})
