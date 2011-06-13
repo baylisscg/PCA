@@ -16,8 +16,8 @@ class Cert < TimedCredential
   
   Object_Type = "http://pca.nesc.gla.ac.uk/schema/object/x509"
 
-  field :subject_dn, :index => true, :background => true
-  field :cert_hash   # The hash of the certificate
+  field :subject_dn, :index => true, :background => true, :unique=>true
+  field :cert_hash,   :index=>true # The hash of the certificate
   field :proxy,      :type=>Boolean, :default=>false # True if a RFC proxy
   field :key 
   
@@ -33,22 +33,35 @@ class Cert < TimedCredential
     hash = super(options)
     hash[:subject_dn] = self.subject_dn
     hash[:cert_hash] = self.cert_hash if self.cert_hash
-    hash[:issuer] = self.issuer if self.issuer
+    hash[:issuer] = self.issuer._id if self.issuer
     hash[:key]    = self.key
     return hash
   end
   
   def self.recursive(x,xs)
-    y,*ys = xs
+    
     x509 = OpenSSL::X509::Certificate.new(Base64.decode64(x))
-    attribs = {:subject_dn=>x509.subject.to_s}
+    attribs = {:subject_dn=> x509.subject.to_s}
     attribs[:valid_from] = x509.not_before 
-    attribs[:valid_to] = x509.not_after
-    attribs[:issuer] = Cert.recursive(y,ys)._id unless ys.empty?
+    attribs[:valid_to] = x509.not_after    
     attribs[:key] = Base64.encode64 x509.public_key.to_der
     attribs[:cert_hash] = "SHA256:" << Digest::SHA256.hexdigest(x509.public_key.to_der)
-    pp attribs
-    return Cert.find_or_create_by( attribs )
+
+    # Process other certs
+    y,*ys = xs unless xs.empty?
+    Cert.recursive(y,ys)._id if y
+
+    cert =  Cert.find_or_create_by(attribs)
+    
+    #Set up issuers
+    if x509.issuer == x509.subject then
+      puts "\n\nSelf Signed\n\n"
+      cert.issuer = cert
+    elsif
+      cert.issuer = Cert.where(:subject_dn=>x509.issuer.to_s).first
+    end
+    cert.save
+    return cert
   end
 
   def self.from_cert(args)

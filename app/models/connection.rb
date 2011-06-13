@@ -80,29 +80,4 @@ class Connection < Entity
     end
   end
 
-  def self.do_tag_count()
-    m = <<-MAP
-function(){
-  this.events.forEach(
-    function(z){
-      emit( z.action , { count : 1 } );
-    }
-  );
-};
-MAP
-
-    r = <<-REDUCE
-function( key , values ){
-  var total = 0;
-  for ( var i=0; i < values.length; i++ )
-    total += values[i].count;
-  return { count : total };
-};
-REDUCE
-
-    result = Connection.collection.map_reduce(m,r,:verbose=>true,:sort=>[["value.count",Mongo::DESCENDING]])
-
-    return result
-  end
-
 end
