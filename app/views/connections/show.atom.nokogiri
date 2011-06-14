@@ -15,9 +15,9 @@ xml.feed('xmlns'=> "http://www.w3.org/2005/Atom",
     xml.url "http://#{@conn.server}"
   end	    
 
-  xml.author :class => "certificate" do
-    xml.name @conn.cert.subject_dn
-    xml.url cert_url(@conn.cert)
+  xml.author :class => "credential" do
+    xml.name @conn.credential.subject_dn
+    xml.url cert_url(@conn.credential)
   end
 
   @conn.events.each do |event|
@@ -25,15 +25,15 @@ xml.feed('xmlns'=> "http://www.w3.org/2005/Atom",
       xml.title event.action
       xml.link :rel => :alternate, :type=> "text/html", :href => event_url(event)
       xml.id_  event.id
-      event.get_verbs.each do |action|
-        xml["activity"].verb action
-      end
+#      event.get_verbs.each do |action|
+        xml["activity"].verb event.action
+#      end
       xml["activity"].object do
         xml["activity"].send("object-type","http://activitystrea.ms/schema/1.0/service") 
         xml.id_ "id"
         xml.summary "summary" 
         xml.link :rel => :alternate, :type=> "text/html", :href => event_url(event)
-        xml["thr"].send("in-reply-to", :ref => event.parent, :type => "text/html", :href=>event_url(event.parent)) if event.parent
+        xml["thr"].send("in-reply-to", :ref => event_url(event.parent), :type => "text/html", :href=>event_url(event.parent)) if event.parent
       end
       xml.updated event.created_at.strftime "%Y-%m-%dT%H:%M:%SZ"
       xml.summary event.action

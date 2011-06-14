@@ -6,7 +6,7 @@
     <% end %>
     <dt>Subject</dt><dd><%= @cert.subject_dn %></dd>
     <dt>Issuer</td><dd><%= link_to @cert.issuer.subject_dn,@cert.issuer %></dd>
-<dt>Hash</td><dd><%=@cert.hash %></dd>
+<dt>Hash</td><dd><%=@cert.cert_hash %></dd>
 <dt>Seen</dt><dd><%= @cert.connections.count %></dd>
 </dl>
 </section>
