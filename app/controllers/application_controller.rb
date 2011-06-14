@@ -13,7 +13,7 @@ class ApplicationController < ActionController::Base
 
   protect_from_forgery
 
-  layout "html5.html"
+#  layout "html5.html"
   
   private
   

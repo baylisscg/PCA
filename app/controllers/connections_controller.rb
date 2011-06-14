@@ -23,7 +23,7 @@ class ConnectionsController < ApplicationController
   def show    
     id = BSON::ObjectId.from_string(params["id"])
     @conn = Connection.criteria.for_ids(id).first
-    respond_with @conn, :location=>connection_url(@conn)
+    respond_with @conn #, :location=>connection_url(@conn)
   end
 
   #
