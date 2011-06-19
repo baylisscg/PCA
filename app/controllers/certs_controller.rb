@@ -27,14 +27,12 @@ class CertsController < ApplicationController
   def show
 
     Rails.logger.warn "Formats = #{request.format} ( #{request.accepts.join(', ')}) #{ request.accepts[1].class}"
-#   Rails.logger.warn "Formats = #{request.headers["HTTP_ACCEPT"]}"
 
     id = params[:id]   
     @cert = Cert.criteria.for_ids(id).first()
     @conns = Connection.uses_cert(@cert)
 
     respond_to do |format|
-#      format.xhtml 
       format.html 
       format.atom { render( :layout => nil) }
     end

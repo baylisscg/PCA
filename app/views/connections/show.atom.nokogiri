@@ -3,7 +3,7 @@ xml.feed('xmlns'=> "http://www.w3.org/2005/Atom",
 	 'xmlns:pca'=>"http://pca.nesc.gla.ac.uk/ns",
          "xmlns:thr"=>"http://purl.org/syndication/thread/1.0") do
   xml.title "Feed Name"
-  xml.link :rel => :hub, :href => "http://localhost:8080/publish"
+  xml.link :rel => :hub, :href => endpoint_subscriptions_url
   xml.link :rel => :self, :href=>connection_url(@conn)
   xml.link :rel => :alternate, :href=>connection_url(@conn)
   xml.id_ @conn.id

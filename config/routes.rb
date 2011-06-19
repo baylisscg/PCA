@@ -12,7 +12,15 @@ PcaApp::Application.routes.draw do
   match "login"  => "main#login"
 
   match "/auth/:provider/callback" => "users#auth"
-  
+
+  resources :certs, :credentials, :events, :users
+
+  resources :credentials do
+    member do
+      get :events
+    end
+  end
+
   resources :connections do
     member do
       get  :events
@@ -21,9 +29,10 @@ PcaApp::Application.routes.draw do
     end
   end
 
-  resources :certs
-  resources :credentials
-  resources :events
-  resources :users
+  resources :subscriptions do
+    collection do
+      post 'endpoint'
+    end
+  end
 
 end

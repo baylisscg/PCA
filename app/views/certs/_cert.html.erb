@@ -1,0 +1,38 @@
+<section>
+  <h1>Cert Details</h1>
+  <dl>
+    <% if cert.user %>
+    <dt>User</dt><dd><%= link_to cert.user.name, cert.user %></dd>
+    <% end %>
+    <dt>Subject</dt><dd><%= cert.subject_dn %></dd>
+    <dt>Issuer</td><dd><%= link_to cert.issuer.subject_dn,cert.issuer %></dd>
+    <dt>Hash</td><dd><%=cert.cert_hash %></dd>
+    <dt>Seen</dt><dd><%= cert.connections.count %></dd>
+  </dl>
+</section>
+
+<% if not cert.connections.empty? %>
+<section>
+<h1>Connections</h1>
+<table>
+  <% cert.connections.each do |conn| %>
+  <tr><td><%= conn.peer %></td><td><%= conn.server %></td><td><%= link_to "details", conn %></td></tr>
+  <% end %>
+</table>
+</section>
+<% end %>
+
+<!-- issued_area sets @issued and calls block if cert issued certificates -->
+<section>
+  <h1>Issued Certs</h1>
+  <% if cert.signed.empty? %>
+  <h2>None</h2>
+  <% else %>
+  <table>
+    <% cert.signed.each do |x| %>
+    <tr><td><%= x.subject_dn %></td><td><%= link_to "details",x %></td></tr>
+    <% end %>
+  </table>
+  <% end %>
+</section>
+

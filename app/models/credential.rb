@@ -31,5 +31,26 @@ class Credential < Entity
     return hash
   end
 
+  def last_event_at
+    self.last_event.updated_at
+  end
+
+  def last_event
+    
+    def test(best,current)
+      if best.last_event > current.last_event
+        puts "#{best.last_event} > #{ current.last_event}"
+        best
+      else
+        puts "#{best.last_event} < #{ current.last_event}"
+        current
+      end 
+    end
+
+    x,*xs = self.connections
+    puts "HI"
+    xs.inject(x) { |(best,current)| test(best,current) }
+  end
+
 end
 

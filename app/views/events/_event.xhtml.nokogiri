@@ -1,0 +1,3 @@
+xml.section do
+  xml.dd.text  event
+end

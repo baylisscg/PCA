@@ -15,8 +15,14 @@ module PCA
   #
   #
   class Client < Net::HTTP
+
+    def self.make_headers(mime_type)
+       { 'Content-Type' => mime_type, 'Accept' => mime_type}
+    end
+
     
-    BASE_HEADERS = { 'Content-Type' => "application/json", 'Accept' => "application/json"}
+    JSON_HEADERS = Client.make_headers "application/json"
+    ATOM_HEADERS = Client.make_headers "application/atom+xml"
 
     # You must use newobj instead of new to initialise this class.
     def initialize(args={})
@@ -39,15 +45,15 @@ module PCA
       @url.path=  URI.parse(result.header["location"]).path
 
       cred_result = self.send_cred
-      self.pp_result cred_result 
+      Client.pp_result cred_result 
 
       return unless cred_result.kind_of? Net::HTTPCreated
       self.send_events
       
-      self.pp_result self.request_get(@url.path,BASE_HEADERS)
+      #Client.pp_result self.request_get(@url.path,JSON_HEADERS)
     end
 
-    def pp_result(result)
+    def self.pp_result(result)
       puts "Status = #{result.code}"
       PP.pp result.to_hash
       begin
@@ -59,12 +65,12 @@ module PCA
 
     #
     def send_connection(conn=@conn)
-      self.request_post(@url.path, Psych.to_json( conn ),  BASE_HEADERS)
+      self.request_post(@url.path, Psych.to_json( conn ),  JSON_HEADERS)
     end
 
     def send_cred(cred=@credential)
       payload =  Psych.to_json :credential=> cred 
-      self.request_post(@url.path+"/add_cred", payload,  BASE_HEADERS)
+      self.request_post(@url.path+"/add_cred", payload,  JSON_HEADERS)
     end
 
     def extract_id(tag)
@@ -75,12 +81,18 @@ module PCA
       events.inject(nil) do |parent,event|
 
         event[:parent] = parent if parent
+        event["created_at"] = Time.now.strftime "%Y-%m-%dT%H:%M:%S.$NZ"
+
+        puts Time.now
+
+#        PP.pp event
+
         result = self.send_event event
         
-        self.pp_result result
+#        Client.pp_result result
 
         data = Psych.parse(result.body).to_ruby
-
+        
         break unless result.kind_of? Net::HTTPCreated
 
         # POST succeded so extract parent ID and post next event 
@@ -89,15 +101,20 @@ module PCA
     end
 
     def send_event(event)
-      self.request_post(@url.path+"/add_event", Psych.to_json( :event=>event ),  BASE_HEADERS)
+      PP.pp Psych.to_json( :event=>event )
+      self.request_post(@url.path+"/add_event", Psych.to_json( :event=>event ),  JSON_HEADERS)
+    end
+
+    def fetch_atom
+      Client.pp_result self.request_get @url.path, ATOM_HEADERS 
     end
 
   end
-
 end
 
 if __FILE__ == $PROGRAM_NAME
   puts "Starting"
   client = PCA::Client.newobj Psych.parse_file("./client.yml").to_ruby
   client.run
+#  client.fetch_atom
 end

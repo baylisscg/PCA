@@ -1,8 +1,6 @@
+# -*- coding: undecided -*-
 #
 #
-#
-#
-
 
 #
 #
@@ -12,8 +10,6 @@ class ApplicationController < ActionController::Base
   around_filter :audit_helper
 
   protect_from_forgery
-
-#  layout "html5.html"
   
   private
   

@@ -4,11 +4,14 @@
 #
 #
 
+require "pp"
 
 #
 #
 #
 class MainController < ApplicationController 
+
+  
 
   #
   #
@@ -78,6 +81,13 @@ class MainController < ApplicationController
     puts "Hits =  #{query.count}"
     
     @hits = query
+  end
+
+  def subscribe
+    PP.pp params
+    respond_to do |format|
+      format.html { render "errors/404", :status => 404, :layout=> nil }
+    end
   end
   
 end

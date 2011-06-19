@@ -68,6 +68,9 @@ class ConnectionsController < ApplicationController
 
     raise "No event passed params = #{params}" unless params[:event]
     id = BSON::ObjectId.from_string(params["id"])
+
+    puts "Timestam = #{params[:event][:created_at]}"
+
     @event = Event.new(params[:event].symbolize_keys)
 
     @conn = Connection.criteria.for_ids([id]).first

@@ -33,6 +33,15 @@ class Event < Entity
     out
   end
 
+  def <(other) 
+    self.created_at < other.created_at
+  end
+
+  def >(other) 
+    other.created_at < self.created_at
+  end
+
+
   def elapsed
     Time.now - self.created_at
   end
